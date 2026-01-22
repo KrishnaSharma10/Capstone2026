@@ -35,6 +35,7 @@ import DOAAAccount from './DOAA/Pages/Account/Account.js'
 
 import { ToastContainer } from "react-toastify";
 import { UserProvider } from "./UserContext.js";
+import { Navigate } from "react-router-dom";
 
 
 import ICMPLogin from "./Login/Login.js";
@@ -50,6 +51,8 @@ function App() {
       <Router>
         <div className='App'>
           <Routes>
+            <Route path="/" element={<Navigate to="/login" />} /> {/* Default route */}
+
 
             <Route path="/login" element={<ICMPLogin />} />
             <Route path="/forget-pass" element={<ForgetPass />} />
