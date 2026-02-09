@@ -294,12 +294,23 @@ const PendingTable = ({ data, requestType, department }) => {
                             Click Here
                             </a>
                         </h4>
-                        <h4>
-                            Fee Reciept Link:{" "}
-                            <a href={selectedDetailsRow?.fee_receipt_link} target="_blank" rel="noopener noreferrer">
-                            Click Here
-                            </a>
-                        </h4>
+                       <h4>
+  Fee Receipt link:{" "}
+  {selectedDetailsRow?.fee_receipt_link ? (
+    <a
+      href={selectedDetailsRow.fee_receipt_link}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Click Here
+    </a>
+  ) : (
+    <span style={{ color: "red", fontWeight: "bold" }}>
+      Not uploaded yet
+    </span>
+  )}
+</h4>
+
                         <button onClick={closeDetailsPopup} className='coordinator-popup-close-btn'>Close</button>
                     </div>
                 </div>

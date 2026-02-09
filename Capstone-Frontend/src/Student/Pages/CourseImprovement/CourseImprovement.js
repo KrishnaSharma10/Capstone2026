@@ -30,40 +30,76 @@ const CourseImprovement = () => {
   const navigate = useNavigate();
 
 
+  // useEffect(() => {
+  //   if (!student) return; // wait until student is available
+
+  //   console.log("Student data:", student);
+
+  //   if (student.ongoing_application) {
+  //     // 1️⃣ Fetch application details
+  //     axios.post("http://127.0.0.1:5000/api/get-application-details", {
+  //       application_id: student.ongoing_application
+  //     })
+  //     .then((res) => {
+  //       console.log("Application details:", res);
+
+  //       const stage = res.data?.["Application Data"]?.["stage"];
+  //       if (stage === 5 || stage === 10 || stage === -1) {
+  //         setActive(false);
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       console.error("Error fetching application details:", err);
+  //       setActive(false); 
+  //     });
+
+  //     // 2️⃣ Fetch course list
+  //     axios.get("http://127.0.0.1:5000/api/get-course-list")
+  //     .then((res) => {
+  //       setCourseData(res.data);
+  //     })
+  //     .catch(() => {
+  //       toast.error("Failed to fetch data");
+  //     });
+  //   }
+
+  // }, [student]); 
   useEffect(() => {
-    if (!student) return; // wait until student is available
+  if (!student) return;
 
-    console.log("Student data:", student);
+  console.log("Student data:", student);
 
-    if (student.ongoing_application) {
-      // 1️⃣ Fetch application details
-      axios.post("http://127.0.0.1:5000/api/get-application-details", {
-        application_id: student.ongoing_application
-      })
-      .then((res) => {
-        console.log("Application details:", res);
+  // ✅ Always fetch course list
+  axios.get("http://127.0.0.1:5000/api/get-course-list")
+    .then((res) => setCourseData(res.data))
+    .catch(() => toast.error("Failed to fetch courses"));
 
-        const stage = res.data?.["Application Data"]?.["stage"];
-        if (stage === 5 || stage === 10 || stage === -1) {
-          setActive(false);
-        }
-      })
-      .catch((err) => {
-        console.error("Error fetching application details:", err);
-        setActive(false); 
-      });
+  // ✅ If no application → allow form
+  if (!student.ongoing_application) {
+    setActive(false);
+    return;
+  }
 
-      // 2️⃣ Fetch course list
-      axios.get("http://127.0.0.1:5000/api/get-course-list")
-      .then((res) => {
-        setCourseData(res.data);
-      })
-      .catch(() => {
-        toast.error("Failed to fetch data");
-      });
+  // ✅ Application exists → check status
+  axios.post("http://127.0.0.1:5000/api/get-application-details", {
+    application_id: student.ongoing_application
+  })
+  .then((res) => {
+    const stage = res.data?.["Application Data"]?.["stage"];
+
+    if (stage === 5 || stage === 10 || stage === -1) {
+      setActive(false); // completed / rejected
+    } else {
+      setActive(true);  // ongoing
     }
+  })
+  .catch((err) => {
+    console.error("Error fetching application:", err);
+    setActive(false);
+  });
 
-  }, [student]); 
+}, [student]);
+
 
   const handleSubmit1 = (e) => {
     e.preventDefault();
