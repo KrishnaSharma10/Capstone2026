@@ -62,6 +62,8 @@ func SetupRoutes() *fiber.App {
 	doaa.Post("/update-application", doaaHandler.UpdateApplication)
 	// doaa.Get("/get-all-applications", doaaHandler.GetAllApplications)
 
+	//finance routes
+
 	//auth routes
 	auth := app.Group("/verify")
 	auth.Get("/", authHandler.VerifyStudent)
