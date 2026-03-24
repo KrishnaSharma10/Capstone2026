@@ -19,7 +19,6 @@ const FinanceDashboard = () => {
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                // Finance fetches all applications that have reached stage 3 or beyond
                 const response = await fetch('http://127.0.0.1:5000/api/get-all-applications');
                 const data = await response.json();
 
