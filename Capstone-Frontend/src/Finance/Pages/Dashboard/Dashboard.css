@@ -1,0 +1,49 @@
+.finance-dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background: #f4f6fb;
+}
+
+.finance-dashboard-main {
+    margin-left: 220px;
+    flex: 1;
+    padding: 0 32px 40px;
+}
+
+.finance-dashboard-header {
+    padding: 8px 0 24px;
+}
+
+.finance-welcome h4 {
+    font-size: 14px;
+    font-weight: 400;
+    color: #888;
+    margin: 0;
+}
+
+.finance-welcome-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 2px 0 4px;
+}
+
+.finance-welcome h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: #555;
+    margin: 0 0 24px;
+}
+
+.finance-stats-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.finance-loading {
+    text-align: center;
+    padding: 60px;
+    color: #888;
+    font-size: 15px;
+}

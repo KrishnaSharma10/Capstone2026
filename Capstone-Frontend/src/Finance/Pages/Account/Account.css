@@ -1,0 +1,92 @@
+.finance-account-container {
+    display: flex;
+    min-height: 100vh;
+    background: #f4f6fb;
+}
+
+.finance-account-main {
+    margin-left: 220px;
+    flex: 1;
+    padding: 0 32px 40px;
+}
+
+.finance-account-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 36px;
+    max-width: 480px;
+    margin-top: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.finance-account-card h3 {
+    font-size: 13px;
+    font-weight: 500;
+    color: #888;
+    margin: 0 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.finance-account-card h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 4px;
+}
+
+.finance-account-email {
+    font-size: 14px;
+    color: #888;
+    margin: 0;
+}
+
+.finance-account-divider {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 24px 0;
+}
+
+.finance-account-card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 14px;
+}
+
+.finance-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.finance-input-group input {
+    padding: 10px 14px;
+    border: 1px solid #dde3f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.finance-input-group input:focus {
+    border-color: #16a085;
+}
+
+.finance-save-btn {
+    padding: 10px 24px;
+    background: #16a085;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    align-self: flex-start;
+}
+
+.finance-save-btn:hover {
+    background: #0f8a72;
+}

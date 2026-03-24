@@ -7,6 +7,7 @@ export const UserProvider = ({ children }) => {
   const [hod, setHOD] = useState(null);
   const [coordinator, setCoordinator] = useState(null);
   const [doaa, setDOAA] = useState(null);
+  const [finance, setFinance] = useState(null);
 
   // Read all user roles from localStorage on initial load
   useEffect(() => {

@@ -3,7 +3,7 @@ import {
   Routes,
   Route,
 } from "react-router-dom";
-import './App.css'; 
+import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -32,6 +32,9 @@ import DOAACoordinators from './DOAA/Pages/Coordinators/Coordinators.js'
 import DOAAClashingRequest from './DOAA/Pages/ClashingRequests/ClashingRequests.js'
 import DOAAClashingStats from './DOAA/Pages/ClashingStats/ClashingStats.js'
 import DOAAAccount from './DOAA/Pages/Account/Account.js'
+
+import FinanceDashboard from './Finance/Pages/Dashboard/Dashboard.js';
+import FinanceAccount from './Finance/Pages/Account/Account.js';
 
 import { ToastContainer } from "react-toastify";
 import { UserProvider } from "./UserContext.js";
@@ -86,6 +89,8 @@ function App() {
             <Route path="/doaa/clashing-stats" element={<ProtectedRouteDoaa><DOAAClashingStats /></ProtectedRouteDoaa>} />
             <Route path="/doaa/account" element={<ProtectedRouteDoaa><DOAAAccount /></ProtectedRouteDoaa>} />
 
+            <Route path="/finance/dashboard" element={<FinanceDashboard />} />
+            <Route path="/finance/account" element={<FinanceAccount />} />
 
           </Routes>
           <ToastContainer />
