@@ -5,6 +5,7 @@ import StatCard from './DashboardComponents/StatCard';
 import FeeRequestList from './DashboardComponents/FeeRequestList';
 import './Dashboard.css';
 import { UserContext } from '../../../UserContext';
+import { useNavigate } from 'react-router-dom';
 
 const FinanceDashboard = () => {
     const [pendingData, setPendingData] = useState([]);
@@ -14,7 +15,15 @@ const FinanceDashboard = () => {
     const [selectedData, setSelectedData] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const finance = { name: 'Test Finance User' };
+    const { finance } = useContext(UserContext);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = localStorage.getItem("ICMPTokenFinance");
+        if (!token || !finance) {
+            navigate("/login");
+        }
+    }, [finance]);
 
     useEffect(() => {
         const fetchApplications = async () => {

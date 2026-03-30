@@ -10,7 +10,7 @@ const ICMPLogin = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("student");
   const navigate = useNavigate();
-  const {setStudent, setCoordinator, setDOAA, setHOD} = useContext(UserContext);
+  const { setStudent, setCoordinator, setDOAA, setHOD, setFinance } = useContext(UserContext);
 
   const notifySuccess = () => {
     toast.success('Successfully Logged In!!', {
@@ -28,14 +28,14 @@ const ICMPLogin = () => {
     }
     setEmail("");
     setPassword("");
-    if(role === "student"){
+    if (role === "student") {
       const data = {
         thapar_email: email,
         password: password
       }
       try {
         const res = await axios.post("http://127.0.0.1:5000/api/student/login", data);
-        if(res.status === 202){
+        if (res.status === 202) {
           notifySuccess();
           localStorage.setItem("ICMPTokenStudent", res.data["token"]);
           setStudent(res.data["studentData"]);
@@ -43,14 +43,14 @@ const ICMPLogin = () => {
         }
       } catch (error) {
         console.log(error);
-        if(error.response){
-          if(error.response.status === 400)
+        if (error.response) {
+          if (error.response.status === 400)
             toast.error(error.response.data.error);
         }
         else
           toast.error('Login Failed');
       }
-    }else if(role === "coordinator"){
+    } else if (role === "coordinator") {
       const data = {
         email: email,
         password: password
@@ -58,7 +58,7 @@ const ICMPLogin = () => {
 
       try {
         const res = await axios.post("http://127.0.0.1:5000/api/coordinator/login", data);
-        if(res.status === 202){
+        if (res.status === 202) {
           notifySuccess();
           localStorage.setItem("ICMPTokenCoordinator", res.data["token"]);
           setCoordinator(res.data["coordinatorData"]);
@@ -66,15 +66,15 @@ const ICMPLogin = () => {
         }
       } catch (error) {
         console.log(error);
-        if(error.response){
-          if(error.response.status === 400)
+        if (error.response) {
+          if (error.response.status === 400)
             toast.error(error.response.data.error);
         }
-        else{
+        else {
           toast.error('Login Failed');
         }
-    }
-    }else if(role === "hod"){
+      }
+    } else if (role === "hod") {
       const data = {
         hod_email: email,
         hod_password: password
@@ -82,7 +82,7 @@ const ICMPLogin = () => {
 
       try {
         const res = await axios.post("http://127.0.0.1:5000/api/hod/login", data);
-        if(res.status === 202){
+        if (res.status === 202) {
           notifySuccess();
           localStorage.setItem("ICMPTokenHod", res.data["token"]);
           setHOD(res.data["hodData"]);
@@ -90,16 +90,41 @@ const ICMPLogin = () => {
         }
       } catch (error) {
         console.log(error);
-        if(error.response){
-          if(error.response.status === 400)
+        if (error.response) {
+          if (error.response.status === 400)
             toast.error(error.response.data.error);
         }
-        else{
+        else {
           toast.error('Login Failed');
         }
-    }
-      
-    }else if(role === "doaa"){
+      }
+
+    } else if (role === "finance") {
+      const data = {
+        finance_email: email,
+        finance_password: password
+      }
+
+      try {
+        const res = await axios.post("http://127.0.0.1:5000/api/finance/login", data);
+        if (res.status === 200) {
+          notifySuccess();
+          localStorage.setItem("ICMPTokenFinance", res.data["token"]);
+          setFinance(res.data["financeData"]);
+          navigate("/finance/dashboard");
+        }
+      } catch (error) {
+        console.log(error);
+        if (error.response) {
+          if (error.response.status === 400)
+            toast.error(error.response.data.error);
+        }
+        else {
+          toast.error('Login Failed');
+        }
+      }
+
+    } else if (role === "doaa") {
       const data = {
         doaa_email: email,
         doaa_password: password
@@ -107,7 +132,7 @@ const ICMPLogin = () => {
 
       try {
         const res = await axios.post("http://127.0.0.1:5000/api/doaa/login", data);
-        if(res.status === 202){
+        if (res.status === 202) {
           notifySuccess();
           localStorage.setItem("ICMPTokenDoaa", res.data["token"]);
           setDOAA(res.data["doaaData"]);
@@ -115,16 +140,16 @@ const ICMPLogin = () => {
         }
       } catch (error) {
         console.log(error);
-        if(error.response){
-          if(error.response.status === 400)
+        if (error.response) {
+          if (error.response.status === 400)
             toast.error(error.response.data.error);
         }
-        else{
+        else {
           toast.error('Login Failed');
         }
-    }
+      }
 
-    }else{
+    } else {
       return;
     }
   };
@@ -151,6 +176,7 @@ const ICMPLogin = () => {
               <option value="hod">HOD</option>
               <option value="coordinator">Coordinator</option>
               <option value="student">Student</option>
+              <option value="finance">Finance</option>
             </select>
 
             <label htmlFor="email">Email</label>
@@ -177,7 +203,7 @@ const ICMPLogin = () => {
             <button type="submit">Sign in</button>
           </form>
           <p>
-            Don't have an account yet? <a className="icmp-register-link" onClick={()=> {navigate("/student/signup")}}>Register Here</a>
+            Don't have an account yet? <a className="icmp-register-link" onClick={() => { navigate("/student/signup") }}>Register Here</a>
           </p>
         </div>
       </div>
