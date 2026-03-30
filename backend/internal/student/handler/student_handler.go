@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/student/service"
 	"github.com/gofiber/fiber/v2"
-	"github.com/shivansh-mangla/capstone/backend/internal/student/service"
 )
 
 var electiveBasketList []string

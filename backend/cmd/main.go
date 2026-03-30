@@ -4,17 +4,17 @@ import (
 	"log"
 	"os"
 
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/database"
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/router"
+	studentHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/student/handler"
 	"github.com/joho/godotenv"
-	"github.com/shivansh-mangla/capstone/backend/internal/database"
-	"github.com/shivansh-mangla/capstone/backend/internal/router"
-	studentHandler "github.com/shivansh-mangla/capstone/backend/internal/student/handler"
 )
 
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-    log.Println("No .env file found, using Render environment variables")
-}
+		log.Println("No .env file found, using Render environment variables")
+	}
 
 	PORT := os.Getenv("PORT")
 	database.ConnectMongo()

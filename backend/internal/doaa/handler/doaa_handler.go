@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/doaa/service"
 	"github.com/gofiber/fiber/v2"
-	"github.com/shivansh-mangla/capstone/backend/internal/doaa/service"
 )
 
 func LoginDoaa(c *fiber.Ctx) error {

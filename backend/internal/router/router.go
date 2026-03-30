@@ -1,14 +1,14 @@
 package router
 
 import (
+	authHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/auth/handler"
+	coordinatorHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/coordinator/handler"
+	doaaHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/doaa/handler"
+	hodHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/hod/handler"
+	studentHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/student/handler"
+	utilsHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/utils/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	authHandler "github.com/shivansh-mangla/capstone/backend/internal/auth/handler"
-	coordinatorHandler "github.com/shivansh-mangla/capstone/backend/internal/coordinator/handler"
-	doaaHandler "github.com/shivansh-mangla/capstone/backend/internal/doaa/handler"
-	hodHandler "github.com/shivansh-mangla/capstone/backend/internal/hod/handler"
-	studentHandler "github.com/shivansh-mangla/capstone/backend/internal/student/handler"
-	utilsHandler "github.com/shivansh-mangla/capstone/backend/internal/utils/service"
 )
 
 func SetupRoutes() *fiber.App {

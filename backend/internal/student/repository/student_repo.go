@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/shivansh-mangla/capstone/backend/internal/database"
-	"github.com/shivansh-mangla/capstone/backend/internal/student/model"
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/database"
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/student/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )

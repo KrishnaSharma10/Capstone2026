@@ -5,11 +5,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/coordinator/model"
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/coordinator/repository"
+	studentModel "github.com/KrishnaSharma10/Capstone2026/backend/internal/student/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
-	"github.com/shivansh-mangla/capstone/backend/internal/coordinator/model"
-	"github.com/shivansh-mangla/capstone/backend/internal/coordinator/repository"
-	studentModel "github.com/shivansh-mangla/capstone/backend/internal/student/model"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )

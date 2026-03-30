@@ -10,12 +10,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/database"
+	utilsModel "github.com/KrishnaSharma10/Capstone2026/backend/internal/utils/model"
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/utils/repository"
 	"github.com/cloudinary/cloudinary-go"
 	"github.com/cloudinary/cloudinary-go/api/uploader"
 	"github.com/gofiber/fiber/v2"
-	"github.com/shivansh-mangla/capstone/backend/internal/database"
-	utilsModel "github.com/shivansh-mangla/capstone/backend/internal/utils/model"
-	"github.com/shivansh-mangla/capstone/backend/internal/utils/repository"
 	"gopkg.in/mail.v2"
 )
 
