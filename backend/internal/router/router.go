@@ -4,6 +4,7 @@ import (
 	authHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/auth/handler"
 	coordinatorHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/coordinator/handler"
 	doaaHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/doaa/handler"
+	financeHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/finance/handler"
 	hodHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/hod/handler"
 	studentHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/student/handler"
 	utilsHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/utils/service"
@@ -63,6 +64,8 @@ func SetupRoutes() *fiber.App {
 	// doaa.Get("/get-all-applications", doaaHandler.GetAllApplications)
 
 	//finance routes
+	finance := api.Group("/finance")
+	finance.Post("/login", financeHandler.LoginFinance)
 
 	//auth routes
 	auth := app.Group("/verify")
