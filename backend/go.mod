@@ -1,4 +1,4 @@
-module github.com/shivansh-mangla/capstone/backend
+module github.com/KrishnaSharma10/Capstone2026/backend
 
 go 1.24.4
 

@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/database"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
-	"github.com/shivansh-mangla/capstone/backend/internal/database"
 	"go.mongodb.org/mongo-driver/bson"
 )
 

@@ -4,10 +4,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/hod/model"
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/hod/repository"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
-	"github.com/shivansh-mangla/capstone/backend/internal/hod/model"
-	"github.com/shivansh-mangla/capstone/backend/internal/hod/repository"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )

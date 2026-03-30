@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/coordinator/service"
 	"github.com/gofiber/fiber/v2"
-	"github.com/shivansh-mangla/capstone/backend/internal/coordinator/service"
 )
 
 func LoginCoordinator(c *fiber.Ctx) error {
