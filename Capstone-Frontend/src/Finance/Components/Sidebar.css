@@ -1,0 +1,60 @@
+.finance-sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background-color: #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.finance-sidebar-logo {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+    padding: 16px 0 28px;
+    letter-spacing: 2px;
+}
+
+.finance-sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 12px;
+}
+
+.finance-sidebar-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #a0a8c0;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+.finance-sidebar-menu-item:hover {
+    background-color: #2a2a4a;
+    color: #ffffff;
+}
+
+.finance-sidebar-menu-item.active {
+    background-color: #16a085;
+    color: #ffffff;
+}
+
+.finance-sidebar-icon {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.finance-sidebar-label {
+    font-size: 14px;
+}

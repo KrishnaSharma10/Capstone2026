@@ -8,21 +8,22 @@ import threading, time, os
 import openpyxl
 
 
-with open("data1.json") as f:
-    timetable = json.load(f)
-with open("data2.json") as f:
-    subject_map = json.load(f)
+with open("subgroups.json") as f:
+    subgroups = json.load(f)
+with open("courses.json") as f:
+    courses = json.load(f)
 with open("elective.json") as f:
     electives = json.load(f)
+with open("electives_subgrouplist.json") as f:
+    electives_subgrouplist = json.load(f)
 
 UPLOAD_FOLDER = "timeTableUploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-
 app = Flask(__name__)
 CORS(app)
-sf = logic.SlotFinder(timetable, subject_map, electives)
+sf = logic.SlotFinder(subgroups, courses, electives, electives_subgrouplist)
 
 
 @app.route("/", methods=["POST"])
@@ -34,11 +35,8 @@ def get_students():
     print(data)
     print('\n\n')
 
-    
     selectedCourseData = data['selectedCourseData']
     studentData = data['studentData']
-
-    # print(selectedCourseData)
 
     subgroup = studentData['subgroup']
     elective_basket = studentData['elective_basket']
@@ -47,12 +45,11 @@ def get_students():
     subjectCodes = ["", "", ""]
     for i in range(len(selectedCourseData)):
         subjectCodes[i] = selectedCourseData[i]['subjectCode']
-    # print(subjectCodes)
 
     newTT, choices = sf.mainF(subgroup, elective_basket, subjectCodes[0], subjectCodes[1], subjectCodes[2])
-    
 
     return jsonify({"newTimeTable": newTT, "choices": choices})
+
 
 @app.route('/upload', methods=["POST"])
 def upload():
@@ -67,4 +64,4 @@ def upload():
 
 
 if __name__ == "__main__":
-  app.run(debug=True, port=3001)
+    app.run(debug=True, port=3001)

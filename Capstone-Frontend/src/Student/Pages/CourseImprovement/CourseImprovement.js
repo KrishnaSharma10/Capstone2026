@@ -31,43 +31,38 @@ const CourseImprovement = () => {
 
 
   useEffect(() => {
-    if (!student) return; // wait until student is available
+  if (!student) return;
 
-    console.log("Student data:", student);
+  console.log("Student data:", student);
 
-    if (!student.ongoing_application) {
-      setActive(false);
-    }
+  // fetch course list
+  axios.get("http://127.0.0.1:5000/api/get-course-list")
+    .then((res) => setCourseData(res.data))
+    .catch(() => toast.error("Failed to fetch courses"));
 
-
-    // 1️⃣ Fetch application details
-    axios.post("http://127.0.0.1:5000/api/get-application-details", {
-      application_id: student.ongoing_application
-    })
-      .then((res) => {
-        console.log("Application details:", res);
-
-        const stage = res.data?.["Application Data"]?.["stage"];
-        if (stage === 5 || stage === 10 || stage === -1) {
-          setActive(false);
-        }
-      })
-      .catch((err) => {
-        console.error("Error fetching application details:", err);
-        setActive(false);
-      });
-
-    // 2️⃣ Fetch course list
-    axios.get("http://127.0.0.1:5000/api/get-course-list")
-      .then((res) => {
-        setCourseData(res.data);
-      })
-      .catch(() => {
-        toast.error("Failed to fetch data");
-      });
+  if (!student.ongoing_application) {
+    setActive(false);
+    return;
   }
 
-    , [student]);
+  axios.post("http://127.0.0.1:5000/api/get-application-details", {
+    application_id: student.ongoing_application
+  })
+  .then((res) => {
+    const stage = res.data?.["Application Data"]?.["stage"];
+    if (stage === 5 || stage === 10 || stage === -1) {
+      setActive(false);
+    } else {
+      setActive(true);
+    }
+  })
+  .catch((err) => {
+    console.error("Error fetching application:", err);
+    setActive(false);
+  });
+
+}, [student]);
+
 
   const handleSubmit1 = (e) => {
     e.preventDefault();
@@ -77,13 +72,11 @@ const CourseImprovement = () => {
         (course) => course.subjectCode.toLowerCase() === selectedCourseCode.toLowerCase()
       );
 
-      console.log(foundCourse);
       if (foundCourse) {
         if (selectedCourseData.length === 3) {
           toast.error("Can Select Maximum of 3 Courses");
           return;
         }
-        console.log(foundCourse.subjectCode);
         setSelectedCourseData([
           ...selectedCourseData,
           {
@@ -116,7 +109,6 @@ const CourseImprovement = () => {
             subjectP: foundCourse.data["P"],
           }
         ]);
-
       }
     }
 
@@ -131,17 +123,15 @@ const CourseImprovement = () => {
     }
 
     console.log(data);
-
-    axios.post("https://capstone-flask-gofl.onrender.com", data)
+    
+    axios.post("http://127.0.0.1:3001", data)
       .then((res) => {
         console.log(res.data);
         setChoices(res.data.choices);
         setNewTimeTable(res.data.newTimeTable);
 
-        // show success first
         toast.success("Options Generated Successfully!!");
 
-        // fix: use correct key
         if (res.data.choices && res.data.choices.length > 0) {
           setEmptyChoices(false);
         } else {
@@ -153,7 +143,6 @@ const CourseImprovement = () => {
         console.error("Error:", err);
         toast.error("Internal Server Error");
       });
-
   }
 
   const handleCgpaChange = (e) => {
@@ -164,7 +153,7 @@ const CourseImprovement = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+    const maxSize = 2 * 1024 * 1024;
     if (file.size > maxSize) {
       toast.error("Upload File Smaller Than 2MB");
       setIEEFile(null);
@@ -187,21 +176,15 @@ const CourseImprovement = () => {
       "email": student.thapar_email,
       "opted_courses": arr,
       "message": "",
-      "clashing": false,
+      "clashing": newTimeTable.some(event => event.clash),
       "new_time_table": newTimeTable,
       "elective_data": student.electiveData,
       "cgpa": cgpa
     };
 
-    if (arr.length === 1 && arr[0][0] === 'UCS405' && student.subgroup === '4C2G') {
-      data['clashing'] = true;
-    }
-
     const formData = new FormData();
     formData.append("mainData", data);
     formData.append("IEEPdf", IEEFile);
-
-    //need to add IEE pdf upload functionality
 
     console.log(data);
 
@@ -228,9 +211,6 @@ const CourseImprovement = () => {
         setTimeout(() => {
           navigate("/student/status");
         }, 1000);
-
-        //navigating after 1second wait
-
       })
       .catch((err) => {
         console.log(err);
@@ -246,7 +226,7 @@ const CourseImprovement = () => {
 
 
   const currentMonth = new Date().getMonth();
-  const showUpload = currentMonth >= 0 && currentMonth <= 4; // Jan or Feb
+  const showUpload = currentMonth >= 0 && currentMonth <= 4;
 
   return (
     <div>
@@ -344,26 +324,26 @@ const CourseImprovement = () => {
               {emptyChoices ? <h1>No Options Found</h1> : ""}
               {choices.map((val, index) => {
                 const combinedList = [...student.timeTableData, ...newTimeTable[index]];
-                const arr = Object.entries(choices);
 
                 return (
                   <div className='student-course-improvement-individual-choices-div' key={index}>
-                    <h2>Option {index + 1}</h2>
-                    {Object.entries(val).map(([key, value]) => (
-                      <h4 key={key}>{key} with: {value}</h4>
+                    <h2>Option {index+1}</h2>
+
+                    {/* --- subject + subgroup breakdown --- */}
+                    {Object.entries(val).map(([subjectCode, sgs]) => (
+                      <div key={subjectCode}>
+                        <h4>{subjectCode}</h4>
+                        <p>Lecture group: {sgs.lecture_sg || '—'}</p>
+                        <p>Lab group: {sgs.lab_sg || '—'}</p>
+                        <p>Tutorial group: {sgs.tutorial_sg || '—'}</p>
+                      </div>
                     ))}
 
-                    {Object.entries(val).map(([key, value]) => {
-                      if (key === 'UCS405')
-                        return (
-                          <h4>Clashes : YES</h4>
-                        )
-                      else
-                        return (
-                          <h4>Clashes : NO</h4>
-                        )
-                    })}
-
+                    {/* --- clash indicator --- */}
+                    {newTimeTable[index].some(event => event.clash)
+                      ? <h4 style={{color:'orange'}}>⚠️ Has 1 lecture clash</h4>
+                      : <h4 style={{color:'#90EE90'}}>✅ No clashes</h4>
+                    }
 
 
                     <Timetable data={combinedList} ed={student.electiveData} />
@@ -392,6 +372,10 @@ const CourseImprovement = () => {
                       <div className='timetable-legend-inner'>
                         <div className='timetable-legend-circle' style={{ backgroundColor: 'red' }}></div>
                         <p>Added Slots</p>
+                      </div>
+                      <div className='timetable-legend-inner'>
+                        <div className='timetable-legend-circle' style={{backgroundColor: 'orange'}}></div>
+                        <p>Clash Slot</p>
                       </div>
                     </div>
 

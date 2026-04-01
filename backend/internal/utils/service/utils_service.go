@@ -67,7 +67,9 @@ func SendVerificationEmail(recipientEmail, token string) error {
 	// Set up dialer
 	d := mail.NewDialer(smtpHost, smtpPort, from, password)
 	d.Timeout = 10 * time.Second // prevent hanging
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: false}
+	d.TLSConfig = &tls.Config{
+		ServerName: "smtp.gmail.com",
+	}
 
 	// Send email
 	if err := d.DialAndSend(m); err != nil {

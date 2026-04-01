@@ -1,371 +1,428 @@
-# preprocess.py
+import re
+import json
+import sys
+from pathlib import Path
 from openpyxl import load_workbook
 
+# ── Constants ──────────────────────────────────────────────────────────────────────
 
-class PreprocessClass:
-    @staticmethod
-    def preprocessScriptFunc(path):
-        """Load workbook and run processing, returning (finalDict, finalDict2)."""
-        workbook = load_workbook(path)
-        # debug: print(workbook.sheetnames)
-        finalDict, finalDict2 = PreprocessClass.process_workbook(workbook)
-        return finalDict, finalDict2
+DAYS         = ['MON', 'TUE', 'WED', 'THU', 'FRI']
+SLOTS_PER_DAY = 14
 
-    @staticmethod
-    def get_HOUR_position(sheet):
-        """Returns the (row, col) of the first place where HOUR/HOURS is written."""
-        ans = (0, 0)
-        sum1 = 10000
-        for row in sheet.iter_rows():
-            for cell in row:
-                if cell.value in ("HOUR", "HOURS"):
-                    if cell.row + cell.column < sum1:
-                        ans = (cell.row, cell.column)
-                        sum1 = cell.row + cell.column
-        return ans
+# Sheets to skip unconditionally (PG, duplicates, non-timetable sheets)
+# Matching is done on the stripped, lowercased sheet name.
+SKIP_SHEETS = {
+    'pg time table 1',
+    'pg time table1',
+    'dlit',    # empty older duplicate;   # empty duplicate; '4th year-b' or '4th year b ' has real data
+}
 
-    @staticmethod
-    def get_DAY_position(sheet):
-        """Returns the (row, col) of the last place where DAY/DAYS is written."""
-        ans = (0, 0)
-        sum1 = -1
-        for row in sheet.iter_rows():
-            for cell in row:
-                if cell.value in ("DAY", "DAYS"):
-                    if cell.row + cell.column > sum1:
-                        ans = (cell.row, cell.column)
-                        sum1 = cell.row + cell.column
-        return ans
+# Explicit "lab continuation" labels in the course-code row
+_CONTINUATION_RE = re.compile(r'^LAB[-\s]?\d*$', re.IGNORECASE)
 
-    @staticmethod
-    def getCellBorders(row, col, sheet):
-        """Returns a string like 'TLRB' denoting which sides of the cell have borders."""
-        brdrs = ''
-        tmp = sheet.cell(row, col).border
-        if tmp.top.style is not None:
-            brdrs += 'T'
-        if tmp.left.style is not None:
-            brdrs += 'L'
-        if tmp.right.style is not None:
-            brdrs += 'R'
-        if tmp.bottom.style is not None:
-            brdrs += 'B'
-        return brdrs
+# A course code: starts with U, then at least 2 chars (letters/digits/X)
+# Intentionally broad — the university changes prefixes (UCS, UEI, UCT, UCSXX, etc.)
+_COURSE_RE = re.compile(r'^U[A-Z][A-Z0-9]{2,}', re.IGNORECASE)
 
-    @staticmethod
-    def is_cell_merged(row, col, merged_ranges):
-        """Check if a given cell is part of a merged range.
-        Returns (True, range) or (False, None)
-        """
-        for cell_range in merged_ranges:
-            if (
-                cell_range.min_row <= row <= cell_range.max_row and
-                cell_range.min_col <= col <= cell_range.max_col
-            ):
-                return (True, cell_range)
-        return (False, None)
 
-    @staticmethod
-    def create_subgroup_map(sheet):
-        """Returns a dict with key=subgroup name, value=start column (assumes width=2 columns)."""
-        row_day, end_col = PreprocessClass.get_DAY_position(sheet)
-        row_hour, start_col = PreprocessClass.get_HOUR_position(sheet)
+# ── Helpers ─────────────────
 
-        myMap = {}
-        col = start_col + 1
-        while col < end_col:
-            val = sheet.cell(row_hour, col).value
-            if val in ('DAY', 'HOURS') or val is None:
+def is_course_code(val) -> bool:
+    """Return True if val looks like a course code (real or placeholder)."""
+    if not val:
+        return False
+    s = str(val).strip()
+    # Handle elective combos like UCS301/UCS302 — check first part
+    first = s.split('/')[0].strip()
+    # Strip trailing type suffix L/P/T if present
+    if first and first[-1].upper() in ('L', 'P', 'T'):
+        first = first[:-1]
+    return bool(_COURSE_RE.match(first))
+
+def extract_code_and_type(raw: str):
+    if not raw:
+        return None, None
+    s = str(raw).strip().replace(' ', '')
+
+    # Elective: slash-separated choices like UCS751L/UCS752L/UMC742L
+    # Student picks one — don't assign any slot.
+    # Only treat as elective if there's no '+' (which means combined, not optional).
+    if '/' in s and '+' not in s:
+        return None, None
+
+    # Combined course: UCS534+ULC664L — both taught together.
+    # Take only the first code; the slot still gets recorded normally.
+    if '+' in s:
+        s = s.split('+')[0]
+
+    # Take first part for any remaining slash (e.g. UCS301/UCS302 edge cases)
+    first = s.split('/')[0]
+
+    m = re.match(r'(U[A-Z][A-Z0-9]+?)([LPT])?$', first, re.IGNORECASE)
+    if not m:
+        return None, None
+
+    code   = m.group(1).upper()
+    suffix = (m.group(2) or '').upper()
+
+    if not _COURSE_RE.match(code):
+        return None, None
+
+    typ = {'L': 'lecture', 'P': 'lab', 'T': 'tutorial'}.get(suffix, 'lecture')
+    return code, typ
+
+
+def is_continuation_of_previous(val) -> bool:
+  
+    if val is None:
+        return False
+    s = str(val).strip()
+    if not s:
+        return False
+    if _CONTINUATION_RE.match(s):
+        return True
+    if is_course_code(s):
+        return False
+    # Stray text / teacher abbreviation / room code → treat as continuation marker
+    return True
+
+
+def slot_label(day_idx: int, slot_idx: int) -> str:
+    return f"{DAYS[day_idx]}-{slot_idx + 1}"
+
+
+# ── Merged Cell Lookup ──────────────────────────────────
+
+def build_merge_lookup(sheet) -> dict:
+    lk = {}
+    for mr in sheet.merged_cells.ranges:
+        for r in range(mr.min_row, mr.max_row + 1):
+            for c in range(mr.min_col, mr.max_col + 1):
+                lk[(r, c)] = mr
+    return lk
+
+
+def read_cell(sheet, row, col, merge_lookup):
+    """Read cell value, following merged cell back to top-left."""
+    mr = merge_lookup.get((row, col))
+    if mr:
+        return sheet.cell(mr.min_row, mr.min_col).value
+    return sheet.cell(row, col).value
+
+
+# ── Layout Detection ───────────
+
+def find_hours_cell(sheet):
+    """
+    Find the HOURS/HOUR header cell — our layout anchor.
+    Returns (row, col) or (None, None).
+    Searches first 15 rows; picks the cell with smallest row+col sum.
+    """
+    best, best_sum = None, float('inf')
+    for row in sheet.iter_rows(max_row=15):
+        for cell in row:
+            if cell.value is not None and str(cell.value).strip().upper() in ('HOURS', 'HOUR'):
+                s = cell.row + cell.column
+                if s < best_sum:
+                    best_sum = s
+                    best = (cell.row, cell.column)
+    return best if best else (None, None)
+
+
+def get_subgroup_columns(sheet, header_row: int, hours_col: int) -> dict[str, int]:
+    SKIP_VALUES = {
+        'HOURS', 'HOUR', 'DAY', 'DAYS', 'SR NO', 'SR.NO', 'BRANCH',
+        'PRACTICAL', 'TUTORIAL', 'LECTURE', 'TOTAL', 'SIGNATURE', '',
+        'ELECTRONICS', 'ELECTRICAL', 'COMPUTER SCIENCE', 'COMPUTER E',
+        'COMPUTER ENGG', 'CIVIL ENGG', 'MECHANICAL ENGG', 'CHEMICAL ENGG',
+        'BIOMEDICAL ENGG', 'BIOTECHNOLOGY ENGG',
+    }
+    sg_map: dict[str, int] = {}
+    seen_cols: set[int] = set()
+
+    # Scan bottom-up: header_row first, then rows above.
+    # This ensures the specific subgroup name (4C11) in the lowest row
+    # wins over the merged parent label (4C1) in a row above it.
+    for r in range(header_row, max(0, header_row - 4), -1):
+        for c in range(hours_col + 1, sheet.max_column + 1):
+            val = sheet.cell(r, c).value
+            if val is None:
+                continue
+            s = str(val).strip()
+            if not s:
+                continue
+            if s.upper() in SKIP_VALUES:
+                continue
+            if s[0].isdigit() and 3 <= len(s) <= 6 and re.match(r'^[A-Z0-9]+$', s, re.IGNORECASE):
+                if c not in seen_cols:
+                    sg_map[s] = c
+                    seen_cols.add(c)
+
+    return sg_map
+
+def get_sr_col(sheet, header_row: int) -> int:
+  
+    for c in range(1, 4):
+        v = str(sheet.cell(header_row, c).value or '').strip().upper()
+        if 'SR' in v or v in ('1', '2'):
+            return c
+    return 2  # default
+
+
+def get_first_data_row(sheet, header_row: int, sr_col: int) -> int:
+
+    for r in range(header_row + 1, header_row + 8):
+        v = sheet.cell(r, sr_col).value
+        if v == 1 or v == '1':
+            return r
+    return header_row + 1
+
+
+def detect_row_step(sheet, first_data_row: int, sr_col: int) -> int:
+  
+    v = sheet.cell(first_data_row + 1, sr_col).value
+    return 1 if (v == 2 or v == '2') else 2
+
+
+# ── Slot Iterator ──────────────────────────────────────────────────────────────────────
+
+def iter_slot_rows(sheet, first_data_row: int, row_step: int, sr_col: int):
+   
+    row = first_data_row
+    max_row = sheet.max_row
+
+    for day_idx in range(len(DAYS)):
+        for slot_idx in range(SLOTS_PER_DAY):
+            if row > max_row:
+                return
+            venue_row = row + 1 if row_step == 2 else row
+            yield day_idx, slot_idx, row, venue_row
+            row += row_step
+
+
+# ── Per-Subgroup Builder ──────────────────────────────────────────────────────────────────────
+
+def build_subgroup_slots(sheet, sg_col: int, first_data_row: int,
+                          row_step: int, sr_col: int, merge_lookup: dict) -> list:
+ 
+    slots_iter = list(iter_slot_rows(sheet, first_data_row, row_step, sr_col))
+    entries = []
+    last_code = None  # (code, type) from previous slot for Pattern B detection
+    last_was_lab_start = False  # True if previous slot was Pattern-A lab start
+
+    for (day_idx, slot_idx, code_row, venue_row) in slots_iter:
+        raw_val = read_cell(sheet, code_row, sg_col, merge_lookup)
+
+        # ── Pattern A: continuation marker (LAB/stray text) ──
+        if is_continuation_of_previous(raw_val):
+            if last_code is not None:
+                entries.append({
+                    'slot': slot_label(day_idx, slot_idx),
+                    'code': last_code[0],
+                    'type': last_code[1],
+                })
+            # Keep last_code alive in case there's a 3-slot span
+            continue
+
+        # Reset last_code at every non-continuation slot
+        last_code = None
+
+        if raw_val is None:
+            continue
+        s = str(raw_val).strip()
+        if not s:
+            continue
+
+        code, typ = extract_code_and_type(s)
+        if code is None:
+            continue
+
+        # Emit this slot
+        entries.append({
+            'slot': slot_label(day_idx, slot_idx),
+            'code': code,
+            'type': typ,
+        })
+        last_code = (code, typ)
+
+    # ── Pattern B: repeated code ──────────────────────────────────
+    # Walk entries; if two consecutive entries for the SAME subgroup slot sequence
+    # have the same code, they were written twice in the Excel — already captured.
+    # (Pattern B is naturally handled because we read the code at each slot row.
+    #  UTD003L at slot 5 AND slot 6 → two entries → deduplicated in aggregate.)
+
+    return entries
+
+
+# ── Aggregator ──────────────────────────────────────────────────────────────────────
+
+def aggregate(entries: list) -> dict:
+  
+    result = {'lecture': {}, 'lab': {}, 'tutorial': {}}
+    for e in entries:
+        bucket = result[e['type']]
+        if e['code'] not in bucket:
+            bucket[e['code']] = []
+        # Avoid exact duplicate slot entries (can happen at merged-cell edges)
+        if e['slot'] not in bucket[e['code']]:
+            bucket[e['code']].append(e['slot'])
+    return result
+
+
+# ── Sheet Processor ──────────────────────────────────────────────────────────────────────
+
+def process_sheet(sheet) -> tuple[dict, dict]:
+ 
+    hours_row, hours_col = find_hours_cell(sheet)
+    if hours_row is None:
+        return {}, {}
+
+    header_row = hours_row   # The HOURS cell IS in the header row
+    sg_map = get_subgroup_columns(sheet, header_row, hours_col)
+    if not sg_map:
+        return {}, {}
+
+    sr_col         = get_sr_col(sheet, header_row)
+    first_data_row = get_first_data_row(sheet, header_row, sr_col)
+    row_step       = detect_row_step(sheet, first_data_row, sr_col)
+    merge_lookup   = build_merge_lookup(sheet)
+
+    subgroup_dict       = {}
+    course_to_subgroups = {}
+
+    for sg_name, sg_col in sg_map.items():
+        entries = build_subgroup_slots(
+            sheet, sg_col, first_data_row, row_step, sr_col, merge_lookup)
+        agg = aggregate(entries)
+        subgroup_dict[sg_name] = agg
+
+        for typ in ('lecture', 'lab', 'tutorial'):
+            for code in agg[typ]:
+                lst = course_to_subgroups.setdefault(code, [])
+                if sg_name not in lst:
+                    lst.append(sg_name)
+
+    return subgroup_dict, course_to_subgroups
+
+
+# ── Workbook Processor ──────────────────────────────────────────────────────────────────────
+
+def should_process(sheet) -> bool:
+   
+
+    # 1. Must contain HOURS/HOUR somewhere in top rows
+    found_hours = False
+    for row in sheet.iter_rows(max_row=15, values_only=True):
+        for cell in row:
+            if cell and str(cell).strip().upper() in ("HOURS", "HOUR"):
+                found_hours = True
                 break
-            myMap[val] = col
-            col += 2
-        return myMap
+        if found_hours:
+            break
 
-    @staticmethod
-    def handle_lecture(row, col, sheet, merged_ranges):
-        subject_val = sheet.cell(row, col).value or ""
-        subjectCode = subject_val[:-1].strip() if len(subject_val) > 0 else ""
-        merged_info = PreprocessClass.is_cell_merged(row, col, merged_ranges)[1]
-        min_col, max_col = merged_info.min_col, merged_info.max_col
+    if not found_hours:
+        return False
 
-        HOUR_position_row, HOUR_position_col = PreprocessClass.get_HOUR_position(sheet)
-        TIME_position_row = HOUR_position_row + 2
-        TIME_position_col = HOUR_position_col
+    # 2. Must contain subgroup-like values (e.g. 2C1A, 3E2B)
+    subgroup_found = False
+    for row in sheet.iter_rows(max_row=15, values_only=True):
+        for cell in row:
+            if cell:
+                s = str(cell).strip()
+                if (
+                    len(s) >= 3 and
+                    s[0].isdigit() and
+                    any(c.isalpha() for c in s)
+                ):
+                    subgroup_found = True
+                    break
+        if subgroup_found:
+            break
 
-        time1 = sheet.cell(TIME_position_row, TIME_position_col).value
-        t1 = row - TIME_position_row
-        row += 1
-        venue = sheet.cell(row, min_col).value
+    return subgroup_found
 
-        check = PreprocessClass.is_cell_merged(row, max_col, merged_ranges)
-        if check[0]:
-            min_col2 = check[1].min_col
-            teacher_code = sheet.cell(row, min_col2).value
-        else:
-            teacher_code = sheet.cell(row, max_col).value
+def process_workbook(path: str) -> tuple[dict, dict]:
+   
+    wb = load_workbook(path)
+    subgroups = {}
+    courses   = {}
 
-        while True:
-            if 'B' in PreprocessClass.getCellBorders(row, min_col, sheet) or \
-               'T' in PreprocessClass.getCellBorders(row + 1, min_col, sheet):
-                break
-            row += 1
+    for sheet_name in wb.sheetnames:
+        sheet = wb[sheet_name]
 
-        time2 = sheet.cell(row + 1, TIME_position_col).value
-        t2 = row - TIME_position_row
+        if not should_process(sheet):
+          continue
+        sg_dict, course_map = process_sheet(sheet)
 
-        return {
-            'type': 'lecture',
-            'subjectCode': subjectCode,
-            'venue': venue,
-            'teacherCode': teacher_code,
-            'time1': time1,
-            'time2': time2,
-            't1': t1,
-            't2': t2
-        }
+        # Merge subgroups ─ later sheets win on conflict (or extend)
+        for sg, data in sg_dict.items():
+            if sg not in subgroups:
+                subgroups[sg] = data
+            else:
+                # Merge: extend slot lists for each type/code
+                for typ in ('lecture', 'lab', 'tutorial'):
+                    for code, slots in data[typ].items():
+                        existing = subgroups[sg][typ].setdefault(code, [])
+                        for s in slots:
+                            if s not in existing:
+                                existing.append(s)
 
-    @staticmethod
-    def handle_tutorial(row, col, sheet, merged_ranges):
-        subject_val = sheet.cell(row, col).value or ""
-        subjectCode = subject_val[:-1].strip() if len(subject_val) > 0 else ""
-        merged_info = PreprocessClass.is_cell_merged(row, col, merged_ranges)[1]
-        min_col, max_col = merged_info.min_col, merged_info.max_col
+        for code, sgs in course_map.items():
+            existing = courses.setdefault(code, [])
+            for sg in sgs:
+                if sg not in existing:
+                    existing.append(sg)
 
-        HOUR_position_row, HOUR_position_col = PreprocessClass.get_HOUR_position(sheet)
-        TIME_position_row = HOUR_position_row + 2
-        TIME_position_col = HOUR_position_col
+    return subgroups, courses
 
-        time1 = sheet.cell(TIME_position_row, TIME_position_col).value
-        t1 = row - TIME_position_row
-        row += 1
-        venue = sheet.cell(row, min_col).value
 
-        brdr = PreprocessClass.getCellBorders(row, min_col, sheet)
-        if 'B' not in brdr:
-            row += 1
+# ── CLI ──────────────────────────────────────────────────────────────────────
 
-        check = PreprocessClass.is_cell_merged(row, max_col, merged_ranges)
-        if check[0]:
-            min_col2 = check[1].min_col
-            teacher_code = sheet.cell(row, min_col2).value
-        else:
-            teacher_code = sheet.cell(row, max_col).value
+def main():
+    path = "/content/UG, PG TIME TABLE JAN TO MAY 2026.xlsx" # Explicitly set the path for Colab execution
 
-        while True:
-            if 'B' in PreprocessClass.getCellBorders(row, min_col, sheet) or \
-               'T' in PreprocessClass.getCellBorders(row + 1, min_col, sheet):
-                break
-            row += 1
+    # The following block is commented out to prevent issues with sys.argv in Colab environment
+    # if len(sys.argv) > 1:
+    #     path = sys.argv[1]
+    # else:
+    #     # Default: look for the xlsx next to this script
+    #     default = Path(__file__).parent / 'UG__PG_TIME_TABLE_JAN_TO_MAY_2026.xlsx'
+    #     if default.exists():
+    #         path = str(default)
+    #     else:
+    #         print("Usage: python timetable_parser.py <path_to_timetable.xlsx>")
+    #         sys.exit(1)
 
-        time2 = sheet.cell(row + 1, TIME_position_col).value
-        t2 = row - TIME_position_row
+    print(f"Parsing: {path}\n")
+    subgroups, courses = process_workbook(path)
 
-        return {
-            'type': 'tutorial',
-            'subjectCode': subjectCode,
-            'venue': venue,
-            'teacherCode': teacher_code,
-            'time1': time1,
-            'time2': time2,
-            't1': t1,
-            't2': t2
-        }
+    print(f"✅  {len(subgroups)} subgroups  |  {len(courses)} unique course codes\n")
 
-    @staticmethod
-    def handle_lab(row, col, sheet, merged_ranges):
-        subject_val = sheet.cell(row, col).value or ""
-        subjectCode = subject_val[:-1].strip() if len(subject_val) > 0 else ""
-        merged_info = PreprocessClass.is_cell_merged(row, col, merged_ranges)[1]
-        min_col, max_col = merged_info.min_col, merged_info.max_col
+    # ── Write subgroups.json ──
+    out_sg = Path(path).parent / 'subgroups.json'
+    with open(out_sg, 'w', encoding='utf-8') as f:
+        json.dump(subgroups, f, indent=2)
+    print(f"Saved → {out_sg}")
 
-        HOUR_position_row, HOUR_position_col = PreprocessClass.get_HOUR_position(sheet)
-        TIME_position_row = HOUR_position_row + 2
-        TIME_position_col = HOUR_position_col
+    # ── Write courses.json ──
+    out_c = Path(path).parent / 'courses.json'
+    with open(out_c, 'w', encoding='utf-8') as f:
+        json.dump(courses, f, indent=2)
+    print(f"Saved → {out_c}")
 
-        time1 = sheet.cell(TIME_position_row, TIME_position_col).value
-        t1 = row - TIME_position_row
-        row += 1
-        venue = sheet.cell(row, min_col).value
+    # ── Quick sanity output ──
+    print("\n── Sample: first 3 subgroups ──")
+    for sg in list(subgroups.keys())[:3]:
+        print(f"\n  {sg}:")
+        data = subgroups[sg]
+        for typ in ('lecture', 'lab', 'tutorial'):
+            for code, slots in data[typ].items():
+                print(f"    [{typ:8}] {code:14} → {slots}")
 
-        row += 1
-        teacher_code = sheet.cell(row, max_col).value
+    print("\n── Sample: first 5 course codes ──")
+    for code in list(courses.keys())[:5]:
+        print(f"  {code:14} → {courses[code]}")
 
-        while True:
-            if 'B' in PreprocessClass.getCellBorders(row, min_col, sheet) or \
-               'T' in PreprocessClass.getCellBorders(row + 1, min_col, sheet):
-                break
-            row += 1
 
-        time2 = sheet.cell(row + 1, TIME_position_col).value
-        t2 = row - TIME_position_row
-
-        return {
-            'type': 'lab',
-            'subjectCode': subjectCode,
-            'venue': venue,
-            'teacherCode': teacher_code,
-            'time1': time1,
-            'time2': time2,
-            't1': t1,
-            't2': t2
-        }
-
-    @staticmethod
-    def get_time_table(col, sheet, merged_ranges, hourINC):
-        days_of_week = 5
-        slots_in_each_day = 14
-
-        HOUR_position_row, HOUR_position_col = PreprocessClass.get_HOUR_position(sheet)
-        TIME_position_row = HOUR_position_row + hourINC
-        TIME_position_col = HOUR_position_col
-
-        myList = []
-
-        for day in range(days_of_week):
-            for slot in range(slots_in_each_day):
-                row = TIME_position_row + 2 * (day * slots_in_each_day + slot)
-
-                is_cm = PreprocessClass.is_cell_merged(row, col, merged_ranges)
-                if is_cm[0]:
-                    temp_col = is_cm[1].min_col  # Lower column of the merged cell range
-
-                    if 'T' in PreprocessClass.getCellBorders(row, temp_col, sheet) or \
-                       'B' in PreprocessClass.getCellBorders(row - 1, temp_col, sheet):
-                        val = sheet.cell(row, temp_col).value
-                        if val is not None:
-                            val = str(val).strip()
-                            if len(val) > 0:
-                                last_char = val[-1]
-                                if last_char == 'L':
-                                    myList.append(PreprocessClass.handle_lecture(row, temp_col, sheet, merged_ranges))
-                                elif last_char == 'P':
-                                    myList.append(PreprocessClass.handle_lab(row, temp_col, sheet, merged_ranges))
-                                elif last_char == 'T':
-                                    myList.append(PreprocessClass.handle_tutorial(row, temp_col, sheet, merged_ranges))
-        return myList
-
-    @staticmethod
-    def get_time_table2(myMap, sheet, merged_ranges, hrINC):
-        myList = {}
-        myList2 = {}
-
-        for subgroup in list(myMap.keys()):
-            myList[subgroup] = {}
-
-            subgroupDict = myList[subgroup]
-            subgroupDict['lecture'] = {}
-            subgroupDict['lab'] = {}
-            subgroupDict['tutorial'] = {}
-            subgroupDict['elective'] = {}
-
-            tt = PreprocessClass.get_time_table(myMap[subgroup], sheet, merged_ranges, hrINC)
-            for item in tt:
-                sc = item.get('subjectCode', '').strip()
-                if '/' not in sc and sc[:6] not in ['UMC743', 'UCS658', 'UCS657', 'UCS748', 'UCS539']:
-                    # not an elective course
-                    myList2.setdefault(item['subjectCode'], []).append(subgroup)
-                    subgroupDict[item['type']][item['subjectCode']] = {'slots': [], 'teacher_code': None, 'venue': []}
-                else:
-                    # is an elective course
-                    SCList = [s for s in sc.split('/') if s]
-                    # strip trailing L/P/T
-                    SCList = [s[:-1] if s[-1] in ('L', 'P', 'T') else s for s in SCList]
-
-                    try:
-                        VList = item['venue'].split('/')
-                    except Exception:
-                        VList = [None for _ in SCList]
-
-                    try:
-                        TCList = item['teacherCode'].split('/')
-                    except Exception:
-                        TCList = [None for _ in SCList]
-
-                    if len(SCList) != len(VList):
-                        VList = [None for _ in SCList]
-                    if len(SCList) != len(TCList):
-                        TCList = [None for _ in SCList]
-
-                    for i in range(len(SCList)):
-                        myList2.setdefault(SCList[i], []).append(subgroup)
-                        subgroupDict['elective'][SCList[i]] = {
-                            'lecture': {'slots': [], 'teacher_code': None, 'venue': []},
-                            'lab': {'slots': [], 'teacher_code': None, 'venue': []},
-                            'tutorial': {'slots': [], 'teacher_code': None, 'venue': []}
-                        }
-
-            # second pass: populate slots and teacher/venue
-            for item in tt:
-                sc = item.get('subjectCode', '').strip()
-                if '/' not in sc and sc[:6] not in ['UMC743', 'UCS658', 'UCS657', 'UCS748', 'UCS539']:
-                    tempDict = subgroupDict[item['type']][item['subjectCode']]
-                    tempDict['slots'].append((item['t1'], item['t2']))
-                    tempDict['teacher_code'] = item['teacherCode']
-                    tempDict['venue'].append(item['venue'])
-                else:
-                    SCList = [s for s in sc.split('/') if s]
-                    SCList = [s[:-1] if s[-1] in ('L', 'P', 'T') else s for s in SCList]
-
-                    try:
-                        VList = item['venue'].split('/')
-                    except Exception:
-                        VList = [None for _ in SCList]
-
-                    try:
-                        TCList = item['teacherCode'].split('/')
-                    except Exception:
-                        TCList = [None for _ in SCList]
-
-                    if len(SCList) != len(VList):
-                        VList = [None for _ in SCList]
-                    if len(SCList) != len(TCList):
-                        TCList = [None for _ in SCList]
-
-                    for i in range(len(SCList)):
-                        try:
-                            tempDict2 = subgroupDict['elective'][SCList[i]][item['type']]
-                            tempDict2['slots'].append((item['t1'], item['t2']))
-                            tempDict2['teacher_code'] = TCList[i]
-                            tempDict2['venue'].append(VList[i])
-                        except Exception:
-                            print(f"Error Occurred for {subgroup}")
-
-        return myList, myList2
-
-    @staticmethod
-    def process_workbook(workbook):
-        finalDict = {}
-        finalDict2 = {}
-
-        sheetnamesTemp = workbook.sheetnames
-        sheetnames = []
-        for s in sheetnamesTemp:
-            s1 = s.strip()
-            if s1 and s1[0] in ['1', '2', '3', '4']:
-                sheetnames.append(s)
-
-        for sheetname in sheetnames:
-            first_char = sheetname.strip()[0]
-            if first_char in ('1', '2', '3', '4'):
-                sheet = workbook[sheetname]
-                mr = sheet.merged_cells.ranges
-                subgroupMap = PreprocessClass.create_subgroup_map(sheet)
-
-                hrINC = 2
-                if first_char == '4':
-                    hrINC = 1
-
-                tempDict, tempDict2 = PreprocessClass.get_time_table2(subgroupMap, sheet, mr, hrINC)
-
-                for subg in tempDict.keys():
-                    print(subg)
-                    finalDict[subg] = tempDict[subg]
-
-                for subcode in tempDict2.keys():
-                    if subcode in finalDict2.keys():
-                        finalDict2[subcode] = tempDict2[subcode] + finalDict2[subcode]
-                    else:
-                        finalDict2[subcode] = tempDict2[subcode]
-
-        return finalDict, finalDict2
-
+if __name__ == '__main__':
+    main()
