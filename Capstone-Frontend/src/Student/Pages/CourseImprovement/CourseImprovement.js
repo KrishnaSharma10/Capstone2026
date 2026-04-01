@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 
 const CourseImprovement = () => {
   const token = localStorage.getItem("ICMPTokenStudent");
-  const {student, setStudent} = useContext(UserContext);
+  const { student, setStudent } = useContext(UserContext);
   const [courseData, setCourseData] = useState([]);
   const [selectedCourseCode, setSelectedCourseCode] = useState('');
   const [selectedCourseName, setSelectedCourseName] = useState('');
@@ -73,7 +73,7 @@ const CourseImprovement = () => {
       );
 
       if (foundCourse) {
-        if(selectedCourseData.length === 3){
+        if (selectedCourseData.length === 3) {
           toast.error("Can Select Maximum of 3 Courses");
           return;
         }
@@ -94,7 +94,7 @@ const CourseImprovement = () => {
         (course) => course.data["course name"].toLowerCase() === selectedCourseName.toLowerCase()
       );
       if (foundCourse) {
-        if(selectedCourseData.length === 3){
+        if (selectedCourseData.length === 3) {
           toast.error("Can Select Maximum of 3 Courses");
           return;
         }
@@ -118,7 +118,7 @@ const CourseImprovement = () => {
 
   const handleSubmit2 = () => {
     const data = {
-      selectedCourseData : selectedCourseData,
+      selectedCourseData: selectedCourseData,
       studentData: student
     }
 
@@ -164,14 +164,14 @@ const CourseImprovement = () => {
   };
 
 
-  const handleSubmit3 = (choice, newTimeTable) =>{
+  const handleSubmit3 = (choice, newTimeTable) => {
     const arr = Object.entries(choice);
 
-    if(cgpa.trim() === ''){
+    if (cgpa.trim() === '') {
       toast.error("Must enter the CGPA");
       return;
     };
-    
+
     const data = {
       "email": student.thapar_email,
       "opted_courses": arr,
@@ -195,13 +195,13 @@ const CourseImprovement = () => {
 
     setChoices([]);
     setNewTimeTable([]);
-    
+
     axios.post("http://127.0.0.1:5000/api/student/generate-application", data, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-        })
-      .then((res) =>{
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+    })
+      .then((res) => {
         toast.success("Application successfully created!!");
         setStudent(prev => ({
           ...prev,
@@ -212,7 +212,7 @@ const CourseImprovement = () => {
           navigate("/student/status");
         }, 1000);
       })
-      .catch((err)=>{
+      .catch((err) => {
         console.log(err);
         toast.error("Try again!!");
       })
@@ -237,21 +237,21 @@ const CourseImprovement = () => {
           <Logout />
         </div>
 
-        {active 
+        {active
           ? <h1 className='course-improvement-wait-heading'>Please Wait for the Ongoing Application to be Accepted/Rejected</h1>
           : <>
-              <div className="student-main-course-improvement-top2">
-                <h3>Guidelines: </h3>
-                <h5>- Generate options by clicking on "Generate options" button.</h5>
-                <h5>- Select one of the available options.</h5>
-                <h5>- Wait for the Ongoing Application to be Accepted/Rejected before making new request.</h5>
-              </div>
+            <div className="student-main-course-improvement-top2">
+              <h3>Guidelines: </h3>
+              <h5>- Generate options by clicking on "Generate options" button.</h5>
+              <h5>- Select one of the available options.</h5>
+              <h5>- Wait for the Ongoing Application to be Accepted/Rejected before making new request.</h5>
+            </div>
 
             <div className="student-main-course-improvement-bottom">
               <div className="student-main-course-improvement-bottom-left">
                 <h5>Selected Courses for Improvement</h5>
                 <div className="student-main-course-improvement-bottom-left-t1">
-                  {selectedCourseData.map((course) =>(
+                  {selectedCourseData.map((course) => (
                     <div className="student-main-course-improvement-bottom-left-t2" key={course.subjectCode}>
                       <h6>{course.subjectName}</h6>
                       <p>{course.subjectCode}</p>
@@ -262,16 +262,16 @@ const CourseImprovement = () => {
                   ))}
                 </div>
                 <form>
-                  <p>Present CGPA <span style={{color:'red'}}>*</span></p>
-                  <input type="text" placeholder='Ex: 8.00' required value={cgpa} onChange={handleCgpaChange}/>
-                  
+                  <p>Present CGPA <span style={{ color: 'red' }}>*</span></p>
+                  <input type="text" placeholder='Ex: 8.00' required value={cgpa} onChange={handleCgpaChange} />
+
                   {showUpload && (
                     <>
-                    <p>Upload IEE Signed Document (Mandatory for 8th sem students)</p>
-                    <input type="file" />
+                      <p>Upload IEE Signed Document (Mandatory for 8th sem students)</p>
+                      <input type="file" />
                     </>
                   )}
-                  
+
                 </form>
               </div>
 
@@ -345,31 +345,32 @@ const CourseImprovement = () => {
                       : <h4 style={{color:'#90EE90'}}>✅ No clashes</h4>
                     }
 
-                    <Timetable data={combinedList} ed={student.electiveData}/>
+
+                    <Timetable data={combinedList} ed={student.electiveData} />
 
                     <div className="timetable-legend">
                       <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{backgroundColor: 'white'}}></div>
+                        <div className='timetable-legend-circle' style={{ backgroundColor: 'white' }}></div>
                         <p>Free Slots</p>
                       </div>
                       <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{backgroundColor: '#FFD700'}}></div>
+                        <div className='timetable-legend-circle' style={{ backgroundColor: '#FFD700' }}></div>
                         <p>Lectures</p>
                       </div>
                       <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{backgroundColor: '#90EE90'}}></div>
+                        <div className='timetable-legend-circle' style={{ backgroundColor: '#90EE90' }}></div>
                         <p>Labs</p>
                       </div>
                       <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{backgroundColor: '#ADD8E6'}}></div>
+                        <div className='timetable-legend-circle' style={{ backgroundColor: '#ADD8E6' }}></div>
                         <p>Tutorials</p>
                       </div>
                       <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{backgroundColor: 'pink'}}></div>
+                        <div className='timetable-legend-circle' style={{ backgroundColor: 'pink' }}></div>
                         <p>Electives</p>
                       </div>
                       <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{backgroundColor: 'red'}}></div>
+                        <div className='timetable-legend-circle' style={{ backgroundColor: 'red' }}></div>
                         <p>Added Slots</p>
                       </div>
                       <div className='timetable-legend-inner'>
@@ -378,13 +379,13 @@ const CourseImprovement = () => {
                       </div>
                     </div>
 
-                    <button className='finalize-btn' onClick={()=> {handleSubmit3(val, combinedList)}}>Finalize option {index+1}</button>
+                    <button className='finalize-btn' onClick={() => { handleSubmit3(val, combinedList) }}>Finalize option {index + 1}</button>
                   </div>
                 );
               })}
             </div>
-            </>
-          
+          </>
+
         }
       </div>
     </div>
