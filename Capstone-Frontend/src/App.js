@@ -46,6 +46,7 @@ import ProtectedRouteStudent from "./ProtectedRouteStudent.jsx";
 import ProtectedRouteCoordinator from "./ProtectedRouteCoordinator.jsx";
 import ProtectedRouteHod from "./ProtectedRouteHod.jsx";
 import ProtectedRouteDoaa from "./ProtectedRouteDoaa.jsx";
+import ProtectedRouteFinance from "./ProtectedRouteFinance.jsx";
 import ForgetPass from "./ForgetPass/ForgetPass.jsx";
 
 function App() {
@@ -89,8 +90,9 @@ function App() {
             <Route path="/doaa/clashing-stats" element={<ProtectedRouteDoaa><DOAAClashingStats /></ProtectedRouteDoaa>} />
             <Route path="/doaa/account" element={<ProtectedRouteDoaa><DOAAAccount /></ProtectedRouteDoaa>} />
 
-            <Route path="/finance/dashboard" element={<FinanceDashboard />} />
-            <Route path="/finance/account" element={<FinanceAccount />} />
+            {/*Finance routes */}
+            <Route path="/finance/dashboard" element={<ProtectedRouteFinance><FinanceDashboard /></ProtectedRouteFinance>} />
+            <Route path="/finance/account" element={<ProtectedRouteFinance><FinanceAccount /></ProtectedRouteFinance>} />
 
           </Routes>
           <ToastContainer />
