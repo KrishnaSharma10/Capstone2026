@@ -8,3 +8,15 @@ import (
 func LoginFinance(c *fiber.Ctx) error {
 	return service.LoginFinance(c)
 }
+
+func GetPendingFeeApplications(c *fiber.Ctx) error {
+	return service.GetPendingFeeApplications(c)
+}
+
+func UpdateApplication(c *fiber.Ctx) error {
+	return service.UpdateApplication(c)
+}
+
+func UpdateAllApplications(c *fiber.Ctx) error {
+	return service.UpdateAllApplications(c)
+}

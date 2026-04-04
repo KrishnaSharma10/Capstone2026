@@ -66,6 +66,9 @@ func SetupRoutes() *fiber.App {
 	//finance routes
 	finance := api.Group("/finance")
 	finance.Post("/login", financeHandler.LoginFinance)
+	finance.Get("/pending-applications", financeHandler.GetPendingFeeApplications)
+	finance.Post("/update-application", financeHandler.UpdateApplication)
+	finance.Post("/update-all-applications", financeHandler.UpdateAllApplications)
 
 	//auth routes
 	auth := app.Group("/verify")
