@@ -6,7 +6,19 @@ import logic
 import preprocessScript
 import threading, time, os
 import openpyxl
+from dotenv import load_dotenv
+import os
 
+env_path = os.path.join(os.path.dirname(__file__), "../backend/.env")
+load_dotenv(dotenv_path=env_path)
+
+MONGO_URI = os.getenv("MONGO_URI")
+MONGO_DB = os.getenv("MONGO_DB")
+
+print("MONGO_URI:", MONGO_URI)  # debug
+
+client = MongoClient(MONGO_URI)
+db = client[MONGO_DB]
 
 with open("subgroups.json") as f:
     subgroups = json.load(f)

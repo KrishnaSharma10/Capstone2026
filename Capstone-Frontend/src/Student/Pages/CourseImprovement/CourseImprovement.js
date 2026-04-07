@@ -124,7 +124,7 @@ const CourseImprovement = () => {
 
     console.log(data);
     
-    axios.post("http://127.0.0.1:3001", data)
+    axios.post("http://localhost:5000", data) 
       .then((res) => {
         console.log(res.data);
         setChoices(res.data.choices);
