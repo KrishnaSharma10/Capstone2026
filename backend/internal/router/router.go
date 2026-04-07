@@ -81,5 +81,6 @@ func SetupRoutes() *fiber.App {
 	api.Post("/get-application-status", utilsHandler.GetApplicationStatusById)
 	api.Get("/get-all-applications", utilsHandler.GetAllApplications)
 	api.Get("/get-notification", utilsHandler.GetNotificationHandler)
+	api.Post("/update-course", utilsHandler.UpdateCourse)
 	return app
 }
