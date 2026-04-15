@@ -6,13 +6,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/student/model"
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/student/repository"
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/utils/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/jung-kurt/gofpdf"
-	"github.com/shivansh-mangla/capstone/backend/internal/student/model"
-	"github.com/shivansh-mangla/capstone/backend/internal/student/repository"
-	"github.com/shivansh-mangla/capstone/backend/internal/utils/service"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -203,7 +203,7 @@ func GenerateAndSaveApplication(d *model.Application) string {
 	pdf.Cell(70, 8, "Group: "+d.Subgroup)
 	pdf.Cell(70, 8, "Mobile No.: "+d.PhoneNumber)
 	pdf.Ln(8)
-	pdf.Cell(70, 8, "Present CGPA: "+ d.CGPA)
+	pdf.Cell(70, 8, "Present CGPA: "+d.CGPA)
 
 	pdf.Ln(12)
 

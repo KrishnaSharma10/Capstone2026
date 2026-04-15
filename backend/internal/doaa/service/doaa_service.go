@@ -5,11 +5,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/doaa/model"
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/doaa/repository"
+	studentModel "github.com/KrishnaSharma10/Capstone2026/backend/internal/student/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
-	"github.com/shivansh-mangla/capstone/backend/internal/doaa/model"
-	studentModel "github.com/shivansh-mangla/capstone/backend/internal/student/model"
-	"github.com/shivansh-mangla/capstone/backend/internal/doaa/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -111,18 +111,16 @@ func GetAllCoordinatorsDetails(c *fiber.Ctx) error {
 // 	return c.Status(200).JSON(fiber.Map{"data": allApplications})
 // }
 
-
 func UpdateApplication(c *fiber.Ctx) error {
 	input := new(studentModel.Application)
 
-	
 	if err := c.BodyParser(input); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Cannot parse JSON for Application Acceptance/Rejection by DOAA"})
 	}
 	// fmt.Println(input)
 
-	err := repository.UpdateApplicationinDB(input);
-	if err!= nil{
+	err := repository.UpdateApplicationinDB(input)
+	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"Error": "Applicated not successfully accepted/rejected"})
 	}
 	return c.Status(200).JSON(fiber.Map{"Status": "Application successfully accepted/rejected."})

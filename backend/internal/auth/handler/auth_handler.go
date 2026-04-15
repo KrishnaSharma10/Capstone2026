@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/auth/service"
 	"github.com/gofiber/fiber/v2"
-	"github.com/shivansh-mangla/capstone/backend/internal/auth/service"
 )
 
 func VerifyStudent(c *fiber.Ctx) error {

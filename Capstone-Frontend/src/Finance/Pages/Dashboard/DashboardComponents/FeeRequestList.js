@@ -4,7 +4,7 @@ import axios from 'axios';
 import { FaSort, FaSortUp, FaSortDown, FaUser, FaFileInvoiceDollar } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
-const FeeRequestList = ({ data, requestType }) => {
+const FeeRequestList = ({ data, requestType, onActionComplete }) => {
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [tableData, setTableData] = useState([]);
 
@@ -51,8 +51,7 @@ const FeeRequestList = ({ data, requestType }) => {
 
     // ── Single approve ────────────────────────────────────────────────────────
     const handleApprove = (row) => {
-        // Finance approves fee: stage 3 → 4
-        const updatedRow = { ...row, stage: 4 };
+        const updatedRow = { ...row, stage: 5 };
         axios.post('http://127.0.0.1:5000/api/finance/update-application', updatedRow)
             .then(() => {
                 setTableData((prev) => prev.filter((item) => item !== row));
@@ -60,6 +59,7 @@ const FeeRequestList = ({ data, requestType }) => {
                     prev.filter((r) => r.application_id !== row.application_id)
                 );
                 toast.success('Fee receipt approved!');
+                onActionComplete();
             })
             .catch((err) => {
                 console.error('Error approving application:', err);
@@ -88,6 +88,7 @@ const FeeRequestList = ({ data, requestType }) => {
                 );
                 setShowRejectPopup(false);
                 toast.success('Application rejected.');
+                onActionComplete();
             })
             .catch((err) => {
                 console.error('Error rejecting application:', err);
@@ -124,7 +125,7 @@ const FeeRequestList = ({ data, requestType }) => {
     };
 
     const handleApproveAll = () => {
-        const formList = selectedRowsData.map((val) => ({ ...val, stage: 4 }));
+        const formList = selectedRowsData.map((val) => ({ ...val, stage: 5 }));
         axios.post('http://127.0.0.1:5000/api/finance/update-all-applications', { applications: formList })
             .then(() => {
                 setTableData((prev) =>
@@ -134,6 +135,7 @@ const FeeRequestList = ({ data, requestType }) => {
                 );
                 setSelectedRowsData([]);
                 toast.success('Selected applications approved!');
+                onActionComplete();
             })
             .catch((err) => {
                 console.error('Bulk approve error:', err);
@@ -152,6 +154,7 @@ const FeeRequestList = ({ data, requestType }) => {
                 );
                 setSelectedRowsData([]);
                 toast.success('Selected applications rejected.');
+                onActionComplete();
             })
             .catch((err) => {
                 console.error('Bulk reject error:', err);
@@ -159,7 +162,50 @@ const FeeRequestList = ({ data, requestType }) => {
             });
     };
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    const handleExportCSV = () => {
+        const headers = [
+            'Student Name',
+            'Roll No',
+            'Email',
+            'Year',
+            'Subgroup',
+            'Stage',
+            'Opted Courses',
+            'Application Form Link',
+            'Fee Receipt Link',
+            'Finance Rejection Reason'
+        ];
+
+        const rows = tableData.map((row) => [
+            row.name || '',
+            row.roll_no || '',
+            row.email || '',
+            row.year || '',
+            row.subgroup || '',
+            `Stage ${row.stage}`,
+            (row.opted_courses || []).map((c) => `${c[0]} opted with ${c[1]}`).join(' | '),
+            row.url || '',
+            row.fee_receipt_link || '',
+            row.comments?.[2] || ''
+        ]);
+
+        const csvContent = [headers, ...rows]
+            .map((row) =>
+                row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+            )
+            .join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `finance_applications_${requestType?.toLowerCase() || 'all'}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <div className="finance-request-list">
             <h3 className="finance-list-title">
@@ -167,6 +213,12 @@ const FeeRequestList = ({ data, requestType }) => {
                 {requestType} Applications
                 <span className="finance-count-badge">{tableData.length}</span>
             </h3>
+
+            {tableData.length > 0 && (
+                <button className="finance-btn finance-btn-export" onClick={handleExportCSV}>
+                    ⬇ Export CSV
+                </button>
+            )}
 
             {tableData.length === 0 ? (
                 <div className="finance-empty-state">No {requestType.toLowerCase()} applications.</div>

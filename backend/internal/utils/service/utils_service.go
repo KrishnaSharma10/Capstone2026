@@ -10,12 +10,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/database"
+	utilsModel "github.com/KrishnaSharma10/Capstone2026/backend/internal/utils/model"
+	"github.com/KrishnaSharma10/Capstone2026/backend/internal/utils/repository"
 	"github.com/cloudinary/cloudinary-go"
 	"github.com/cloudinary/cloudinary-go/api/uploader"
 	"github.com/gofiber/fiber/v2"
-	"github.com/shivansh-mangla/capstone/backend/internal/database"
-	utilsModel "github.com/shivansh-mangla/capstone/backend/internal/utils/model"
-	"github.com/shivansh-mangla/capstone/backend/internal/utils/repository"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/mail.v2"
 )
 
@@ -132,6 +134,45 @@ func UploadToCloudinary2(file io.Reader, filename string) (string, error) {
 
 func GetCourseList(c *fiber.Ctx) error {
 	return c.JSON(database.GetCourseList())
+}
+
+func UpdateCourse(c *fiber.Ctx) error {
+	var body bson.M
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse request"})
+	}
+
+	id, ok := body["_id"].(string)
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid or missing _id"})
+	}
+
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ObjectID format"})
+	}
+
+	delete(body, "_id")
+
+	col := database.MongoDB.Collection("courseList")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := col.UpdateOne(ctx,
+		bson.M{"_id": objectID},
+		bson.M{"$set": body},
+	)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	if result.MatchedCount == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Course not found"})
+	}
+
+	// reset cache so next fetch gets fresh data
+	database.ResetCourseCache()
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "Course updated successfully"})
 }
 
 func GetApplicationDetails(c *fiber.Ctx) error {

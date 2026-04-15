@@ -5,6 +5,7 @@ import StatCard from './DashboardComponents/StatCard';
 import FeeRequestList from './DashboardComponents/FeeRequestList';
 import './Dashboard.css';
 import { UserContext } from '../../../UserContext';
+import { useNavigate } from 'react-router-dom';
 
 const FinanceDashboard = () => {
     const [pendingData, setPendingData] = useState([]);
@@ -14,47 +15,45 @@ const FinanceDashboard = () => {
     const [selectedData, setSelectedData] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const finance = { name: 'Test Finance User' };
+    const { finance } = useContext(UserContext);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchApplications = async () => {
-            try {
-                const response = await fetch('http://127.0.0.1:5000/api/get-all-applications');
-                const data = await response.json();
+        const token = localStorage.getItem("ICMPTokenFinance");
+        if (!token || !finance) {
+            navigate("/login");
+        }
+    }, [finance]);
 
-                const pending = [];   // stage 4 — fee receipt submitted, awaiting finance review
-                const approved = [];  // stage 5 — finance approved
-                const rejected = [];  // stage 10 — rejected
+    const fetchApplications = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/get-all-applications');
+            const data = await response.json();
 
-                data.data.forEach((app) => {
-                    switch (app.stage) {
-                        case 4:
-                            pending.push(app);
-                            break;
-                        case 5:
-                            approved.push(app);
-                            break;
-                        case 10:
-                            rejected.push(app);
-                            break;
-                        default:
-                            break;
-                    }
-                });
+            const pending = [], approved = [], rejected = [];
+            data.data.forEach((app) => {
+                if (app.stage === 4) pending.push(app);
+                if (app.stage === 5) approved.push(app);
+                if (app.stage === 10) rejected.push(app);
+            });
 
-                setPendingData(pending);
-                setApprovedData(approved);
-                setRejectedData(rejected);
-                setSelectedData(pending); // default view = pending
-            } catch (error) {
-                console.error('Error fetching applications:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
+            setPendingData(pending);
+            setApprovedData(approved);
+            setRejectedData(rejected);
 
-        fetchApplications();
-    }, []);
+            // update currently selected view too
+            if (selectedType === 'Pending') setSelectedData(pending);
+            else if (selectedType === 'Approved') setSelectedData(approved);
+            else if (selectedType === 'Rejected') setSelectedData(rejected);
+        } catch (error) {
+            console.error('Error fetching applications:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { fetchApplications(); }, []);
 
     const handleSelectType = (type, data) => {
         setSelectedType(type);
@@ -105,6 +104,7 @@ const FinanceDashboard = () => {
                     <FeeRequestList
                         data={selectedData}
                         requestType={selectedType}
+                        onActionComplete={fetchApplications}
                     />
                 )}
             </div>

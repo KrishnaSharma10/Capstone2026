@@ -20,6 +20,9 @@ export const UserProvider = ({ children }) => {
     const storedCoordinator = localStorage.getItem("ICMPcoordinator");
     if (storedCoordinator) setCoordinator(JSON.parse(storedCoordinator));
 
+    const storedFinance = localStorage.getItem("ICMPfinance");
+    if (storedFinance) setFinance(JSON.parse(storedFinance));
+
     const storedDOAA = localStorage.getItem("ICMPdoaa");
     if (storedDOAA) setDOAA(JSON.parse(storedDOAA));
   }, []);
@@ -51,6 +54,15 @@ export const UserProvider = ({ children }) => {
     }
   }, [coordinator]);
 
+  // Sync finance
+  useEffect(() => {
+    if (finance) {
+      localStorage.setItem("ICMPfinance", JSON.stringify(finance));
+    } else {
+      localStorage.removeItem("ICMPfinance");
+    }
+  }, [finance]);
+
   // Sync doaa
   useEffect(() => {
     if (doaa) {
@@ -71,6 +83,8 @@ export const UserProvider = ({ children }) => {
         setCoordinator,
         doaa,
         setDOAA,
+        finance,
+        setFinance,
       }}
     >
       {children}

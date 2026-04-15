@@ -33,7 +33,7 @@ func ConnectMongo() {
 }
 
 func GetCourseList() []bson.M {
-	if flag {
+	if flag && courseList != nil { // ✅ only use cache if it actually has data
 		return courseList
 	}
 	courseListCollection = MongoDB.Collection("courseList")
@@ -41,14 +41,26 @@ func GetCourseList() []bson.M {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	filter := bson.M{}
-
-	cursor, _ := courseListCollection.Find(ctx, filter)
+	cursor, err := courseListCollection.Find(ctx, bson.M{})
+	if err != nil {
+		fmt.Println("error finding course list:", err)
+		return nil
+	}
 	defer cursor.Close(ctx)
 
 	if err := cursor.All(ctx, &courseList); err != nil {
-		fmt.Println("error decoding documents: %w", err)
+		fmt.Println("error decoding documents:", err)
+		return nil
 	}
-	flag = true
+
+	if len(courseList) > 0 {
+		flag = true // ✅ only set flag if we actually got data
+	}
+
 	return courseList
+}
+
+func ResetCourseCache() {
+	flag = false
+	courseList = nil
 }
