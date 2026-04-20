@@ -15,6 +15,7 @@ type Student struct {
 	Applications       []string `json:"applications" bson:"applications"`
 	OngoingApplication string   `json:"ongoing_application" bson:"ongoing_application"`
 	Department         string   `json:"department" bson:"department"`
+	ElectiveData       []string `json:"electiveData" bson:"electiveData"` // ← ADDED
 }
 
 type ElectiveBasket struct {
@@ -32,7 +33,7 @@ type ApplicationRequest struct {
 	Clashing     bool             `json:"clashing" bson:"clashing"`
 	NewTimeTable []TimeTableEntry `json:"new_time_table" bson:"new_time_table"`
 	ElectiveData []string         `json:"elective_data" bson:"elective_data"`
-	CGPA            string           `json:"cgpa" bson:"cgpa"`
+	CGPA         string           `json:"cgpa" bson:"cgpa"`
 }
 
 type TimeTableEntry struct {
@@ -42,6 +43,7 @@ type TimeTableEntry struct {
 	SubjectCode string `json:"subjectCode" bson:"subjectCode"`
 	SubjectName string `json:"subjectName" bson:"subjectName"`
 	Venue       string `json:"venue" bson:"venue"`
+	Clash       bool   `json:"clash" bson:"clash"` // ← ADDED
 }
 
 type Application struct {
@@ -56,7 +58,7 @@ type Application struct {
 	Subgroup        string           `json:"subgroup" bson:"subgroup"`
 	ElectiveBasket  string           `json:"elective_basket" bson:"elective_basket"`
 	GeneralElective string           `json:"general_elective" bson:"general_elective"`
-	OptedCourses    [][]string       `json:"opted_courses" bson:"opted_courses"` // e.g., [["CS101", "Optimization Tech", "A1"], ["MA102", "DSA", "B2"]]
+	OptedCourses    [][]string       `json:"opted_courses" bson:"opted_courses"`
 	Clashing        bool             `json:"clashing" bson:"clashing"`
 	Comments        []string         `json:"comments" bson:"comments"`
 	Message         string           `json:"message" bson:"message"`

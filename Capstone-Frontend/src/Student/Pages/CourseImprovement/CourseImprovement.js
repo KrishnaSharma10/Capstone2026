@@ -124,7 +124,7 @@ const CourseImprovement = () => {
 
     console.log(data);
     
-    axios.post("http://localhost:5000", data) 
+    axios.post("http://localhost:3001", data) 
       .then((res) => {
         console.log(res.data);
         setChoices(res.data.choices);
@@ -333,9 +333,9 @@ const CourseImprovement = () => {
                     {Object.entries(val).map(([subjectCode, sgs]) => (
                       <div key={subjectCode}>
                         <h4>{subjectCode}</h4>
-                        <p>Lecture group: {sgs.lecture_sg || '—'}</p>
-                        <p>Lab group: {sgs.lab_sg || '—'}</p>
-                        <p>Tutorial group: {sgs.tutorial_sg || '—'}</p>
+                        <p style={{ color: 'whitesmoke' }}>Lecture group: {sgs.lecture_sg || '—'}</p>
+                        <p style={{ color: 'whitesmoke' }}>Lab group: {sgs.lab_sg || '—'}</p>
+                        <p style={{ color: 'whitesmoke' }}>Tutorial group: {sgs.tutorial_sg || '—'}</p>
                       </div>
                     ))}
 
