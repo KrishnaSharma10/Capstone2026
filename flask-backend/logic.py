@@ -14,7 +14,6 @@
 #     "FRI": "Friday",
 # }
 
-# # slot numbers are 1-indexed; map to start times (each slot = 50 min)
 # SLOT_TIMES = {
 #     1:  "8:00 AM",
 #     2:  "8:50 AM",
@@ -31,16 +30,11 @@
 #     13: "6:00 PM",
 # }
 
-
 # def slot_to_display(slot: str) -> Tuple[str, str]:
-#     """
-#     Convert "MON-3" → ("Monday", "9:40 AM").
-#     """
 #     day_code, num = slot.split("-")
 #     day = DAY_MAP.get(day_code, day_code)
 #     time = SLOT_TIMES.get(int(num), slot)
 #     return day, time
-
 
 # # ---------------------------------------------------------------------------
 # # Occupancy builder
@@ -52,36 +46,23 @@
 #     electives_subgrouplist: Dict[str, Any],
 #     chosen_elective_codes: List[str],
 # ) -> Set[str]:
-#     """
-#     Returns the set of occupied slot strings for the student's batch.
-
-#     Regular slots (lecture/lab/tutorial) are always marked occupied.
-#     Elective slots are marked only for the student's chosen elective codes.
-#     Uses the 'elective' bucket in subgroups.json if available,
-#     falls back to electives_subgrouplist.json for backward compatibility.
-#     """
 #     occupied: Set[str] = set()
 
 #     sg_data = subgroups.get(batch)
 #     if not sg_data:
 #         raise ValueError(f"Batch '{batch}' not found in subgroups data")
 
-#     # mark all regular lecture / lab / tutorial slots
 #     for cat in ("lecture", "lab", "tutorial"):
 #         for subject_slots in sg_data.get(cat, {}).values():
 #             occupied.update(subject_slots)
 
-#     # mark chosen elective slots
 #     chosen_lower = {c.lower() for c in chosen_elective_codes}
 
 #     if "elective" in sg_data and sg_data["elective"]:
-#         # new format: elective bucket in subgroups.json
-#         # mark slots where the subject code matches student's chosen electives
 #         for code, slots in sg_data["elective"].items():
 #             if code.lower() in chosen_lower:
 #                 occupied.update(slots)
 #     else:
-#         # fallback: electives_subgrouplist.json format
 #         for entry in electives_subgrouplist.get(batch, []):
 #             slot = entry.get("slot")
 #             options = [o.lower() for o in entry.get("options", [])]
@@ -90,7 +71,6 @@
 #                     occupied.add(slot)
 
 #     return occupied
-
 
 # # ---------------------------------------------------------------------------
 # # Subject slot helpers
@@ -102,13 +82,7 @@
 #     cat: str,
 #     subgroups: Dict[str, Any],
 # ) -> Set[str]:
-#     """
-#     Returns the set of slot strings for a given subgroup / subject / component.
-#     Empty set if not present.
-#     """
-#     return set(
-#         subgroups.get(sg, {}).get(cat, {}).get(subject, [])
-#     )
+#     return set(subgroups.get(sg, {}).get(cat, {}).get(subject, []))
 
 
 # def pre_group_subgroups(
@@ -116,20 +90,17 @@
 #     subgroups: Dict[str, Any],
 #     courses: Dict[str, Any],
 # ) -> Tuple[List[str], List[str], List[str]]:
-#     """
-#     For a subject, returns three lists:
-#       lecture_sgs  — subgroups that have a lecture component for this subject
-#       lab_sgs      — subgroups that have a lab component
-#       tutorial_sgs — subgroups that have a tutorial component
-#     """
 #     candidate_sgs = courses.get(subject, [])
 
-#     lecture_sgs  = [sg for sg in candidate_sgs if subject in subgroups.get(sg, {}).get("lecture",  {})]
-#     lab_sgs      = [sg for sg in candidate_sgs if subject in subgroups.get(sg, {}).get("lab",      {})]
+#     lecture_sgs = [
+#         sg for sg in candidate_sgs
+#         if subject in subgroups.get(sg, {}).get("lecture", {})
+#         or subject in subgroups.get(sg, {}).get("elective", {})
+#     ]
+#     lab_sgs      = [sg for sg in candidate_sgs if subject in subgroups.get(sg, {}).get("lab", {})]
 #     tutorial_sgs = [sg for sg in candidate_sgs if subject in subgroups.get(sg, {}).get("tutorial", {})]
 
 #     return lecture_sgs, lab_sgs, tutorial_sgs
-
 
 # # ---------------------------------------------------------------------------
 # # Core backtracking
@@ -144,27 +115,9 @@
 #     max_results: int = 5,
 #     existing_results: int = 0,
 # ) -> List[Dict]:
-#     """
-#     Backtrack over subjects, trying all valid (lecture_sg, lab_sg, tutorial_sg)
-#     combinations per subject.
-
-#     Clash rule:
-#       - Each subject may have AT MOST 1 lecture slot overlapping with
-#         base_occupied (the student's original timetable).
-#       - Added subjects must NOT clash with each other's lecture slots at all.
-#       - Lab / tutorial slots must have zero overlap with anything — hard reject.
-
-#     allow_clash — if False, only zero-clash results accepted.
-#                   if True, up to 1 lecture clash per subject accepted.
-#     existing_results — how many results already collected (from first pass),
-#                        so we know how many more to find.
-
-#     Returns a list of result dicts.
-#     """
 #     results = []
 #     needed = max_results - existing_results
 
-#     # pre-compute component lists for each subject
 #     subject_components = {}
 #     for subj in subjects:
 #         lec_sgs, lab_sgs, tut_sgs = pre_group_subgroups(subj, subgroups, courses)
@@ -176,10 +129,10 @@
 
 #     def backtrack(
 #         idx: int,
-#         occupied: Set[str],           # base + previously added subjects' slots
-#         added_lecture_slots: Set[str], # lecture slots of subjects added so far
+#         occupied: Set[str],   # base_occupied + ALL slots of previously added subjects
+#         base_occ: Set[str],   # original base_occupied, never modified
 #         assignment: List[Dict],
-#         has_clash: bool,               # whether any clash has occurred so far
+#         has_clash: bool,
 #     ):
 #         if len(results) >= needed:
 #             return
@@ -198,30 +151,44 @@
 #         for lec_sg, lab_sg, tut_sg in product(lec_sgs, lab_sgs, tut_sgs):
 
 #             # --- collect slots per component ---
-#             lec_slots = get_slots_for_component(lec_sg, subj, "lecture",  subgroups) if lec_sg else set()
+#             lec_slots = get_slots_for_component(lec_sg, subj, "lecture", subgroups) if lec_sg else set()
+#             if not lec_slots and lec_sg:
+#                 lec_slots = get_slots_for_component(lec_sg, subj, "elective", subgroups)
+
 #             lab_slots = get_slots_for_component(lab_sg, subj, "lab",      subgroups) if lab_sg else set()
 #             tut_slots = get_slots_for_component(tut_sg, subj, "tutorial", subgroups) if tut_sg else set()
 
 #             all_new_slots = lec_slots | lab_slots | tut_slots
 
-#             # --- hard reject: lab or tutorial overlaps with anything ---
+#             # --- hard reject: own lab/tutorial overlaps own lecture ---
+#             if not lab_slots.isdisjoint(lec_slots):
+#                 continue
+#             if not tut_slots.isdisjoint(lec_slots):
+#                 continue
+#                 # hard reject: own lab overlaps own tutorial
+#             if not lab_slots.isdisjoint(tut_slots):
+#                 continue
+
+#             # --- hard reject: ANY new slot overlaps with other added subjects' slots ---
+#             # (occupied - base_occ) isolates only previously added subjects' slots
+#             inter_subject_occupied = occupied - base_occ
+#             if not all_new_slots.isdisjoint(inter_subject_occupied):
+#                 continue
+
+#             # --- hard reject: lab/tutorial overlaps with base timetable ---
 #             non_lec_slots = lab_slots | tut_slots
-#             if not non_lec_slots.isdisjoint(occupied):
+#             if not non_lec_slots.isdisjoint(base_occ):
 #                 continue
 
-#             # --- hard reject: any new slot overlaps with other added subjects' lectures ---
-#             if not all_new_slots.isdisjoint(added_lecture_slots):
-#                 continue
-
-#             # --- lecture clash check ---
-#             lec_clash = lec_slots & base_occupied
+#             # --- lecture clash check against base timetable only ---
+#             lec_clash = lec_slots & base_occ
 #             if len(lec_clash) > 1:
 #                 continue  # more than 1 lecture clash → always reject
 
 #             this_subject_clashes = len(lec_clash) == 1
 
 #             if this_subject_clashes and not allow_clash:
-#                 continue  # first pass: zero clash only
+#                 continue  # pass 1: zero clash only
 
 #             # --- record this assignment ---
 #             entry = {
@@ -235,13 +202,12 @@
 #                 "clash_slots":    lec_clash,
 #             }
 
-#             new_occupied        = occupied | all_new_slots
-#             new_added_lec_slots = added_lecture_slots | lec_slots
+#             new_occupied = occupied | all_new_slots
 
 #             backtrack(
 #                 idx + 1,
 #                 new_occupied,
-#                 new_added_lec_slots,
+#                 base_occ,
 #                 assignment + [entry],
 #                 has_clash or this_subject_clashes,
 #             )
@@ -249,33 +215,14 @@
 #             if len(results) >= needed:
 #                 return
 
-#     backtrack(0, base_occupied, set(), [], False)
+#     backtrack(0, base_occupied, base_occupied, [], False)
 #     return results
-
 
 # # ---------------------------------------------------------------------------
 # # Frontend formatter
 # # ---------------------------------------------------------------------------
 
 # def format_for_frontend(results: List[List[Dict]]) -> Tuple[List[List[Dict]], List[List[Dict]]]:
-#     """
-#     Converts backtracking results into frontend-friendly event lists.
-
-#     Each event:
-#       {
-#         "day":         "Monday",
-#         "hour":        "9:40 AM",
-#         "subjectCode": "UCS071",
-#         "type":        "lecture" | "lab" | "tutorial",
-#         "subgroup":    "3C4A",
-#         "clash":       True | False,
-#         "color":       "red" | "orange"   (orange = clash)
-#       }
-
-#     Returns (options, raw_choices) where:
-#       options      = list of event lists (one per result)
-#       raw_choices  = list of simplified assignment dicts (one per result)
-#     """
 #     options      = []
 #     raw_choices  = []
 
@@ -319,6 +266,24 @@
 
 #     return options, raw_choices
 
+# # ---------------------------------------------------------------------------
+# # Slot fingerprint deduplication
+# # ---------------------------------------------------------------------------
+
+# def result_slot_fingerprint(result: List[Dict]) -> frozenset:
+#     """
+#     Returns a frozenset of ALL slots across all subjects in a result.
+#     Two results with identical slot sets are duplicates from the user's POV.
+#     """
+#     return frozenset(
+#         slot
+#         for entry in result
+#         for slot in (
+#             entry["lecture_slots"] |
+#             entry["lab_slots"]     |
+#             entry["tutorial_slots"]
+#         )
+#     )
 
 # # ---------------------------------------------------------------------------
 # # Main entry point
@@ -329,8 +294,8 @@
 #     def __init__(self, subgroups_data, courses_data, electives_data, electives_subgrouplist_data):
 #         self.subgroups              = subgroups_data
 #         self.courses                = courses_data
-#         self.electives              = electives_data              # basket → [codes]
-#         self.electives_subgrouplist = electives_subgrouplist_data # subgroup → [{slot, options}]
+#         self.electives              = electives_data
+#         self.electives_subgrouplist = electives_subgrouplist_data
 
 #     def mainF(
 #         self,
@@ -340,19 +305,9 @@
 #         sub2: str = "",
 #         sub3: str = "",
 #     ) -> Tuple[List[List[Dict]], List[List[Dict]]]:
-#         """
-#         Main function called by app.py.
 
-#         batch           — student's current subgroup e.g. "3C4A"
-#         elective_basket — name of the elective basket e.g. "High Performance Computing"
-#         sub1/2/3        — subject codes to add (empty string = not used)
-
-#         Returns (options, raw_choices) ready for the frontend.
-#         """
-#         # resolve elective codes from basket name
 #         chosen_elective_codes = self.electives.get("main-elective", {}).get(elective_basket, [])
 
-#         # build base occupied set
 #         base_occupied = build_occupied(
 #             batch,
 #             self.subgroups,
@@ -360,13 +315,11 @@
 #             chosen_elective_codes,
 #         )
 
-#         # collect only non-empty subjects
 #         subjects = [s for s in [sub1, sub2, sub3] if s]
 
 #         if not subjects:
 #             return [], []
 
-#         # filter out subjects that don't exist in courses — skip silently
 #         missing = [s for s in subjects if s not in self.courses]
 #         if missing:
 #             print(f"Warning: subjects not found in courses data, skipping: {missing}")
@@ -375,7 +328,12 @@
 #         if not subjects:
 #             return [], []
 
-#         # pass 1 — collect a large pool of zero-clash results
+#         # Debug: show available subgroups per subject
+#         for subj in subjects:
+#             lec, lab, tut = pre_group_subgroups(subj, self.subgroups, self.courses)
+#             print(f"{subj}: lec_sgs={lec}, lab_sgs={lab}, tut_sgs={tut}")
+
+#         # Pass 1 — zero-clash pool
 #         pool = find_combinations(
 #             subjects,
 #             base_occupied,
@@ -385,7 +343,7 @@
 #             max_results=50,
 #         )
 
-#         # pass 2 — if pool still under 50, fill with clash-allowed results
+#         # Pass 2 — fill with clash-allowed if needed
 #         if len(pool) < 50:
 #             pool += find_combinations(
 #                 subjects,
@@ -397,7 +355,9 @@
 #                 existing_results=len(pool),
 #             )
 
-#         # diversity filter — prioritise lecture variety, then lab, then tutorial
+#         print(f"Pool size before diversity filter: {len(pool)}")
+
+#         # Diversity filter
 #         def fp_lecture(result):
 #             return frozenset((e["subject"], e["lecture_sg"]) for e in result)
 
@@ -407,10 +367,8 @@
 #         def fp_tutorial(result):
 #             return frozenset((e["subject"], e["lecture_sg"], e["lab_sg"], e["tutorial_sg"]) for e in result)
 
-#         # stage 1 — pick results with unique lecture_sg combos
 #         seen_lec = set()
-#         lec_diverse   = []
-#         lec_remaining = []
+#         lec_diverse, lec_remaining = [], []
 #         for result in pool:
 #             fp = fp_lecture(result)
 #             if fp not in seen_lec:
@@ -419,10 +377,8 @@
 #             else:
 #                 lec_remaining.append(result)
 
-#         # stage 2 — from leftovers, pick results with unique lab_sg combos
 #         seen_lab = set()
-#         lab_diverse   = []
-#         lab_remaining = []
+#         lab_diverse, lab_remaining = [], []
 #         for result in lec_remaining:
 #             fp = fp_lab(result)
 #             if fp not in seen_lab:
@@ -431,10 +387,8 @@
 #             else:
 #                 lab_remaining.append(result)
 
-#         # stage 3 — from leftovers, pick results with unique tutorial_sg combos
 #         seen_tut = set()
-#         tut_diverse = []
-#         tut_remaining = []
+#         tut_diverse, tut_remaining = [], []
 #         for result in lab_remaining:
 #             fp = fp_tutorial(result)
 #             if fp not in seen_tut:
@@ -443,48 +397,32 @@
 #             else:
 #                 tut_remaining.append(result)
 
-#         # merge in priority order: lecture > lab > tutorial > exact duplicates
-#         final = (lec_diverse + lab_diverse + tut_diverse + tut_remaining)[:5]
+#         merged = lec_diverse + lab_diverse + tut_diverse + tut_remaining
 
-#         # format for frontend
+#         # Slot fingerprint dedup — remove visually identical timetables
+#         seen_slots = set()
+#         truly_distinct = []
+#         for result in merged:
+#             fp = result_slot_fingerprint(result)
+#             if fp not in seen_slots:
+#                 seen_slots.add(fp)
+#                 truly_distinct.append(result)
+
+#         final = truly_distinct[:5]
+
+#         print(f"Final options after slot dedup: {len(final)}")
+
+#         # Debug: print slot breakdown per option
+#         for i, result in enumerate(final):
+#             for entry in result:
+#                 print(f"Option {i+1} | {entry['subject']} | "
+#                       f"lec={entry['lecture_slots']} | "
+#                       f"lab={entry['lab_slots']} | "
+#                       f"tut={entry['tutorial_slots']}")
+
 #         options, raw_choices = format_for_frontend(final)
 
 #         return options, raw_choices
-
-
-# # ---------------------------------------------------------------------------
-# # Quick test
-# # ---------------------------------------------------------------------------
-
-# if __name__ == "__main__":
-#     with open("/mnt/user-data/uploads/subgroups__2_.json") as f:
-#         subgroups_data = json.load(f)
-#     with open("/mnt/user-data/uploads/courses__2_.json") as f:
-#         courses_data = json.load(f)
-#     with open("/mnt/user-data/uploads/elective.json") as f:
-#         electives_data = json.load(f)
-#     with open("/mnt/user-data/uploads/electives_subgrouplist.json") as f:
-#         electives_sg_data = json.load(f)
-
-#     finder = SlotFinder(subgroups_data, courses_data, electives_data, electives_sg_data)
-
-#     options, choices = finder.mainF(
-#         batch="3C4A",
-#         elective_basket="High Performance Computing",
-#         sub1="UMA022",
-#         sub2="UES013",
-#     )
-
-#     print(f"Found {len(options)} options\n")
-#     for i, (opt, ch) in enumerate(zip(options, choices)):
-#         print(f"--- Option {i+1} ---")
-#         print("Assignment:", json.dumps(ch, indent=2))
-#         print("Events:")
-#         for ev in opt:
-#             clash_marker = " *** CLASH ***" if ev["clash"] else ""
-#             print(f"  {ev['day']:10} {ev['hour']:10} {ev['subjectCode']} [{ev['type']:8}] sg={ev['subgroup']}{clash_marker}")
-#         print()
-
 
 
 import json
@@ -503,7 +441,6 @@ DAY_MAP = {
     "FRI": "Friday",
 }
 
-# slot numbers are 1-indexed; map to start times (each slot = 50 min)
 SLOT_TIMES = {
     1:  "8:00 AM",
     2:  "8:50 AM",
@@ -521,9 +458,6 @@ SLOT_TIMES = {
 }
 
 def slot_to_display(slot: str) -> Tuple[str, str]:
-    """
-    Convert "MON-3" → ("Monday", "9:40 AM").
-    """
     day_code, num = slot.split("-")
     day = DAY_MAP.get(day_code, day_code)
     time = SLOT_TIMES.get(int(num), slot)
@@ -539,30 +473,23 @@ def build_occupied(
     electives_subgrouplist: Dict[str, Any],
     chosen_elective_codes: List[str],
 ) -> Set[str]:
-    """
-    Returns the set of occupied slot strings for the student's batch.
-    """
     occupied: Set[str] = set()
 
     sg_data = subgroups.get(batch)
     if not sg_data:
         raise ValueError(f"Batch '{batch}' not found in subgroups data")
 
-    # mark all regular lecture / lab / tutorial slots
     for cat in ("lecture", "lab", "tutorial"):
         for subject_slots in sg_data.get(cat, {}).values():
             occupied.update(subject_slots)
 
-    # mark chosen elective slots
     chosen_lower = {c.lower() for c in chosen_elective_codes}
 
     if "elective" in sg_data and sg_data["elective"]:
-        # new format: elective bucket in subgroups.json
         for code, slots in sg_data["elective"].items():
             if code.lower() in chosen_lower:
                 occupied.update(slots)
     else:
-        # fallback: electives_subgrouplist.json format
         for entry in electives_subgrouplist.get(batch, []):
             slot = entry.get("slot")
             options = [o.lower() for o in entry.get("options", [])]
@@ -582,10 +509,6 @@ def get_slots_for_component(
     cat: str,
     subgroups: Dict[str, Any],
 ) -> Set[str]:
-    """
-    Returns the set of slot strings for a given subgroup / subject / component.
-    Empty set if not present.
-    """
     return set(subgroups.get(sg, {}).get(cat, {}).get(subject, []))
 
 
@@ -594,18 +517,11 @@ def pre_group_subgroups(
     subgroups: Dict[str, Any],
     courses: Dict[str, Any],
 ) -> Tuple[List[str], List[str], List[str]]:
-    """
-    For a subject, returns three lists:
-      lecture_sgs  — subgroups that have a lecture OR elective component
-      lab_sgs      — subgroups that have a lab component
-      tutorial_sgs — subgroups that have a tutorial component
-    """
     candidate_sgs = courses.get(subject, [])
 
-    # UPDATED: Now checks both "lecture" and "elective" buckets
-    lecture_sgs  = [
-        sg for sg in candidate_sgs 
-        if subject in subgroups.get(sg, {}).get("lecture", {}) 
+    lecture_sgs = [
+        sg for sg in candidate_sgs
+        if subject in subgroups.get(sg, {}).get("lecture", {})
         or subject in subgroups.get(sg, {}).get("elective", {})
     ]
     lab_sgs      = [sg for sg in candidate_sgs if subject in subgroups.get(sg, {}).get("lab", {})]
@@ -626,13 +542,9 @@ def find_combinations(
     max_results: int = 5,
     existing_results: int = 0,
 ) -> List[Dict]:
-    """
-    Backtrack over subjects, trying all valid (lecture_sg, lab_sg, tutorial_sg) combinations.
-    """
     results = []
     needed = max_results - existing_results
 
-    # pre-compute component lists for each subject
     subject_components = {}
     for subj in subjects:
         lec_sgs, lab_sgs, tut_sgs = pre_group_subgroups(subj, subgroups, courses)
@@ -644,8 +556,8 @@ def find_combinations(
 
     def backtrack(
         idx: int,
-        occupied: Set[str],
-        added_lecture_slots: Set[str],
+        occupied: Set[str],   # base_occupied + ALL slots of previously added subjects
+        base_occ: Set[str],   # original base_occupied, never modified
         assignment: List[Dict],
         has_clash: bool,
     ):
@@ -667,8 +579,6 @@ def find_combinations(
 
             # --- collect slots per component ---
             lec_slots = get_slots_for_component(lec_sg, subj, "lecture", subgroups) if lec_sg else set()
-            
-            # UPDATED: Fallback to elective bucket if no lecture found
             if not lec_slots and lec_sg:
                 lec_slots = get_slots_for_component(lec_sg, subj, "elective", subgroups)
 
@@ -677,26 +587,34 @@ def find_combinations(
 
             all_new_slots = lec_slots | lab_slots | tut_slots
 
-            # --- hard reject: lab or tutorial overlaps with anything ---
+            # --- hard reject: intra-subject component overlaps ---
+            if not lab_slots.isdisjoint(lec_slots):
+                continue
+            if not tut_slots.isdisjoint(lec_slots):
+                continue
+            if not lab_slots.isdisjoint(tut_slots):
+                continue
+
+            # --- hard reject: ANY new slot overlaps with other added subjects' slots ---
+            inter_subject_occupied = occupied - base_occ
+            if not all_new_slots.isdisjoint(inter_subject_occupied):
+                continue
+
+            # --- hard reject: lab/tutorial overlaps with base timetable ---
             non_lec_slots = lab_slots | tut_slots
-            if not non_lec_slots.isdisjoint(occupied):
+            if not non_lec_slots.isdisjoint(base_occ):
                 continue
 
-            # --- hard reject: any new slot overlaps with other added subjects' lectures ---
-            if not all_new_slots.isdisjoint(added_lecture_slots):
-                continue
-
-            # --- lecture clash check ---
-            lec_clash = lec_slots & base_occupied
+            # --- lecture clash check against base timetable only ---
+            lec_clash = lec_slots & base_occ
             if len(lec_clash) > 1:
-                continue  # more than 1 lecture clash → always reject
+                continue
 
             this_subject_clashes = len(lec_clash) == 1
 
             if this_subject_clashes and not allow_clash:
-                continue  # first pass: zero clash only
+                continue
 
-            # --- record this assignment ---
             entry = {
                 "subject":        subj,
                 "lecture_sg":     lec_sg,
@@ -708,13 +626,12 @@ def find_combinations(
                 "clash_slots":    lec_clash,
             }
 
-            new_occupied        = occupied | all_new_slots
-            new_added_lec_slots = added_lecture_slots | lec_slots
+            new_occupied = occupied | all_new_slots
 
             backtrack(
                 idx + 1,
                 new_occupied,
-                new_added_lec_slots,
+                base_occ,
                 assignment + [entry],
                 has_clash or this_subject_clashes,
             )
@@ -722,17 +639,42 @@ def find_combinations(
             if len(results) >= needed:
                 return
 
-    backtrack(0, base_occupied, set(), [], False)
+    backtrack(0, base_occupied, base_occupied, [], False)
     return results
+
+# ---------------------------------------------------------------------------
+# LTP slot count validator
+# ---------------------------------------------------------------------------
+
+def validate_slot_counts(
+    result: List[Dict],
+    course_ltp: Dict[str, int],
+) -> bool:
+    """
+    Returns True if every subject in the result has exactly the expected
+    number of slots (L + T + P) as provided by course_ltp.
+    Returns True if course_ltp is empty (no validation requested).
+    """
+    for entry in result:
+        subj = entry["subject"]
+        expected = course_ltp.get(subj)
+        if expected is None:
+            continue  # no LTP data for this subject, skip
+        actual = (
+            len(entry["lecture_slots"]) +
+            len(entry["lab_slots"])     +
+            len(entry["tutorial_slots"])
+        )
+        if actual < expected:
+            print(f"  LTP filter: {subj} has {actual} slots, expected {expected} → rejected")
+            return False
+    return True
 
 # ---------------------------------------------------------------------------
 # Frontend formatter
 # ---------------------------------------------------------------------------
 
 def format_for_frontend(results: List[List[Dict]]) -> Tuple[List[List[Dict]], List[List[Dict]]]:
-    """
-    Converts backtracking results into frontend-friendly event lists.
-    """
     options      = []
     raw_choices  = []
 
@@ -777,6 +719,21 @@ def format_for_frontend(results: List[List[Dict]]) -> Tuple[List[List[Dict]], Li
     return options, raw_choices
 
 # ---------------------------------------------------------------------------
+# Slot fingerprint deduplication
+# ---------------------------------------------------------------------------
+
+def result_slot_fingerprint(result: List[Dict]) -> frozenset:
+    return frozenset(
+        slot
+        for entry in result
+        for slot in (
+            entry["lecture_slots"] |
+            entry["lab_slots"]     |
+            entry["tutorial_slots"]
+        )
+    )
+
+# ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
@@ -785,8 +742,8 @@ class SlotFinder:
     def __init__(self, subgroups_data, courses_data, electives_data, electives_subgrouplist_data):
         self.subgroups              = subgroups_data
         self.courses                = courses_data
-        self.electives              = electives_data              # basket → [codes]
-        self.electives_subgrouplist = electives_subgrouplist_data # subgroup → [{slot, options}]
+        self.electives              = electives_data
+        self.electives_subgrouplist = electives_subgrouplist_data
 
     def mainF(
         self,
@@ -795,14 +752,14 @@ class SlotFinder:
         sub1: str = "",
         sub2: str = "",
         sub3: str = "",
+        course_ltp: Dict[str, int] = None,
     ) -> Tuple[List[List[Dict]], List[List[Dict]]]:
-        """
-        Main function called by app.py.
-        """
-        # resolve elective codes from basket name
+
+        if course_ltp is None:
+            course_ltp = {}
+
         chosen_elective_codes = self.electives.get("main-elective", {}).get(elective_basket, [])
 
-        # build base occupied set
         base_occupied = build_occupied(
             batch,
             self.subgroups,
@@ -810,13 +767,11 @@ class SlotFinder:
             chosen_elective_codes,
         )
 
-        # collect only non-empty subjects
         subjects = [s for s in [sub1, sub2, sub3] if s]
 
         if not subjects:
             return [], []
 
-        # filter out subjects that don't exist in courses — skip silently
         missing = [s for s in subjects if s not in self.courses]
         if missing:
             print(f"Warning: subjects not found in courses data, skipping: {missing}")
@@ -825,7 +780,12 @@ class SlotFinder:
         if not subjects:
             return [], []
 
-        # pass 1 — collect a large pool of zero-clash results
+        # Debug: show available subgroups per subject
+        for subj in subjects:
+            lec, lab, tut = pre_group_subgroups(subj, self.subgroups, self.courses)
+            print(f"{subj}: lec_sgs={lec}, lab_sgs={lab}, tut_sgs={tut}")
+
+        # Pass 1 — zero-clash pool
         pool = find_combinations(
             subjects,
             base_occupied,
@@ -835,7 +795,7 @@ class SlotFinder:
             max_results=50,
         )
 
-        # pass 2 — if pool still under 50, fill with clash-allowed results
+        # Pass 2 — fill with clash-allowed if needed
         if len(pool) < 50:
             pool += find_combinations(
                 subjects,
@@ -847,7 +807,9 @@ class SlotFinder:
                 existing_results=len(pool),
             )
 
-        # diversity filter — prioritise lecture variety, then lab, then tutorial
+        print(f"Pool size before diversity filter: {len(pool)}")
+
+        # Diversity filter
         def fp_lecture(result):
             return frozenset((e["subject"], e["lecture_sg"]) for e in result)
 
@@ -858,8 +820,7 @@ class SlotFinder:
             return frozenset((e["subject"], e["lecture_sg"], e["lab_sg"], e["tutorial_sg"]) for e in result)
 
         seen_lec = set()
-        lec_diverse   = []
-        lec_remaining = []
+        lec_diverse, lec_remaining = [], []
         for result in pool:
             fp = fp_lecture(result)
             if fp not in seen_lec:
@@ -869,8 +830,7 @@ class SlotFinder:
                 lec_remaining.append(result)
 
         seen_lab = set()
-        lab_diverse   = []
-        lab_remaining = []
+        lab_diverse, lab_remaining = [], []
         for result in lec_remaining:
             fp = fp_lab(result)
             if fp not in seen_lab:
@@ -880,8 +840,7 @@ class SlotFinder:
                 lab_remaining.append(result)
 
         seen_tut = set()
-        tut_diverse = []
-        tut_remaining = []
+        tut_diverse, tut_remaining = [], []
         for result in lab_remaining:
             fp = fp_tutorial(result)
             if fp not in seen_tut:
@@ -890,7 +849,36 @@ class SlotFinder:
             else:
                 tut_remaining.append(result)
 
-        final = (lec_diverse + lab_diverse + tut_diverse + tut_remaining)[:5]
+        merged = lec_diverse + lab_diverse + tut_diverse + tut_remaining
+
+        # Slot fingerprint dedup — remove visually identical timetables
+        seen_slots = set()
+        truly_distinct = []
+        for result in merged:
+            fp = result_slot_fingerprint(result)
+            if fp not in seen_slots:
+                seen_slots.add(fp)
+                truly_distinct.append(result)
+
+        # LTP validation — filter out results with incomplete slot counts
+        if course_ltp:
+            print("Running LTP slot count validation...")
+            ltp_valid = [r for r in truly_distinct if validate_slot_counts(r, course_ltp)]
+            print(f"After LTP validation: {len(ltp_valid)} / {len(truly_distinct)} passed")
+        else:
+            ltp_valid = truly_distinct
+
+        final = ltp_valid[:5]
+
+        print(f"Final options after slot dedup: {len(final)}")
+
+        # Debug: print slot breakdown per option
+        for i, result in enumerate(final):
+            for entry in result:
+                print(f"Option {i+1} | {entry['subject']} | "
+                      f"lec={entry['lecture_slots']} | "
+                      f"lab={entry['lab_slots']} | "
+                      f"tut={entry['tutorial_slots']}")
 
         options, raw_choices = format_for_frontend(final)
 
