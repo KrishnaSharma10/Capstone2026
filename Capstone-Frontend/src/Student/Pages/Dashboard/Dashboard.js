@@ -10,31 +10,31 @@ import { Tooltip } from "react-tooltip";
 
 
 const Dashboard = () => {
-  const {setStudent, student} = useContext(UserContext);
+  const { setStudent, student } = useContext(UserContext);
   const [ttData, setTtData] = useState(null);
   const [electiveData, setElectiveData] = useState(null);
-  const hasFetchedTTData = useRef(false);  
-  const hasFetchedElectiveData = useRef(false);  
+  const hasFetchedTTData = useRef(false);
+  const hasFetchedElectiveData = useRef(false);
 
 
   useEffect(() => {
-    if (!student) return; 
+    if (!student) return;
     console.log(student);
 
     const fetchElectiveData = async () => {
-      try{
+      try {
         const res = await axios.get("http://127.0.0.1:5000/api/student/get-elective-data");
         setElectiveData(res.data);
       } catch (err) {
         console.error("Failed to fetch data:", err.response?.data || err.message);
-      } 
+      }
     }
 
     const fetchTimeTableData = async () => {
       try {
         const token = localStorage.getItem("ICMPStudentToken");
 
-        const res = await axios.get("http://127.0.0.1:5000/api/student/gettimetable?subgroup="+student.subgroup, {
+        const res = await axios.get("http://127.0.0.1:5000/api/student/gettimetable?subgroup=" + student.subgroup, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -42,18 +42,18 @@ const Dashboard = () => {
 
         setTtData(res.data.data);
 
-        if(hasFetchedTTData.current  == false){
+        if (hasFetchedTTData.current == false) {
           setStudent(prev => ({
             ...prev,
             timeTableData: res.data.data
           }));
-          hasFetchedTTData.current  = true;
+          hasFetchedTTData.current = true;
         }
         console.log(student);
 
       } catch (err) {
         console.error("Failed to fetch data:", err.response?.data || err.message);
-      } 
+      }
     }
 
     fetchTimeTableData();
@@ -74,87 +74,100 @@ const Dashboard = () => {
   );
 
   const ed = electiveData[student.elective_basket];
-  if(hasFetchedElectiveData.current == false){
+  if (hasFetchedElectiveData.current == false) {
     setStudent(prev => ({
-        ...prev,
-        electiveData: ed
-      }));
+      ...prev,
+      electiveData: ed
+    }));
     hasFetchedElectiveData.current = true;
   }
 
 
   return (
-    <div>
+    <div className="dashboard-container">
       <StudentSidebar />
-      <div className="student-main-dashboard">
-        <div className="student-main-dashboard-top-row">
-          <h1>Dashboard</h1>
-          <Logout />
-        </div>
-        <div className="student-dashboard-top">
-          <h1>Welcome</h1>
-          <h4 className='student-name'>
-            {student.name}
-          </h4>
-          <div className="student-dashboard-info-tiles">
-            <div className="student-dashboard-info-tile">
-              <h2>Roll Number</h2>
-              <p>{student.roll_no}</p>
-            </div>
-            <div className="student-dashboard-info-tile">
-              <h2>Academic Year</h2>
-              <p>{student.academic_year}</p>
-            </div>
-            <div className="student-dashboard-info-tile">
-              <h2>Branch</h2>
-              <p>{student.branch}</p>
-            </div>
-            <div className="student-dashboard-info-tile">
-              <h2>Subgroup</h2>
-              <p>{student.subgroup}</p>
-            </div>
-            <div className="student-dashboard-info-tile">
-              <h2>Electives</h2>
-              <p>{student.elective_basket}</p>
-              <p>{student.general_elective}</p>
+
+      <div className="dashboard-content">
+
+        {/* TOP BAR */}
+        <div className="dashboard-header">
+          <div>
+            <h1>Welcome back, {student.name}</h1>
+            <div className="status-row">
+              <span className="status-badge">Write Something</span>
             </div>
           </div>
+          <Logout />
         </div>
 
-        <div className="student-dashboard-bottom">
-          <h1>Your Time Table</h1>
-          <h4 className='student-name'>
-            {student.subgroup}
-          </h4>
-          <Timetable data={ttData} ed= {ed}/>
+        {/* CARDS */}
+        <div className="dashboard-cards">
+
+          <div className="card highlight">
+            <p>ROLL NUMBER</p>
+            <h2>{student.roll_no}</h2>
+            <div className="progress-line"></div>
+          </div>
+
+          <div className="card">
+            <p>BRANCH</p>
+            <h3>{student.branch}</h3>
+            <small>{student.subgroup}</small>
+          </div>
+
+          <div className="card">
+            <p>CURRENT YEAR</p>
+            <h1>{student.academic_year}</h1>
+            <small></small>
+          </div>
+
+          <div className="card">
+            <p>ELECTIVES</p>
+            <ul>
+              <li>{student.elective_basket}</li>
+              <li>{student.general_elective}</li>
+            </ul>
+          </div>
+
+        </div>
+
+        {/* TIMETABLE */}
+        <div className="dashboard-timetable">
+          <div className="tt-header">
+            <h2>Your Timetable</h2>
+          </div>
+
+          <p className="tt-subtext">
+            Weekly academic schedule including improvement lectures and sessions.
+          </p>
+
+          <div className="timetable-scroll">
+            <Timetable data={ttData} ed={ed} />
+          </div>
           <div className="timetable-legend">
-            <div className='timetable-legend-inner'>
-              <div className='timetable-legend-circle' style={{backgroundColor: 'white'}}></div>
+            <div className="legend-item">
+              <span className="legend-dot free"></span>
               <p>Free Slots</p>
             </div>
-            <div className='timetable-legend-inner'>
-              <div className='timetable-legend-circle' style={{backgroundColor: '#FFD700'}}></div>
+            <div className="legend-item">
+              <span className="legend-dot lecture"></span>
               <p>Lectures</p>
             </div>
-            <div className='timetable-legend-inner'>
-              <div className='timetable-legend-circle' style={{backgroundColor: '#90EE90'}}></div>
+            <div className="legend-item">
+              <span className="legend-dot lab"></span>
               <p>Labs</p>
             </div>
-            <div className='timetable-legend-inner'>
-              <div className='timetable-legend-circle' style={{backgroundColor: '#ADD8E6'}}></div>
+            <div className="legend-item">
+              <span className="legend-dot tutorial"></span>
               <p>Tutorials</p>
             </div>
-            <div className='timetable-legend-inner'>
-              <div className='timetable-legend-circle' style={{backgroundColor: 'pink'}}></div>
+            <div className="legend-item">
+              <span className="legend-dot elective"></span>
               <p>Electives</p>
             </div>
           </div>
-
-          {/* <div className="student-dashboard-bottom-buttons">
-            <button>Download as PDF</button>
-            <button>Add to google Calendar</button>
-          </div> */}
         </div>
+
       </div>
     </div>
   )
