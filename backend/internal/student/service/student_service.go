@@ -382,3 +382,12 @@ func GetAllApplicationsByEmail(c *fiber.Ctx) error {
 	}
 	return c.Status(200).JSON(fiber.Map{"Applications": allApplications})
 }
+
+// angad announcements
+func GetNotifications(c *fiber.Ctx) error {
+	notifications, err := repository.GetNotificationsFromDB()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch notifications"})
+	}
+	return c.Status(fiber.StatusOK).JSON(notifications)
+}

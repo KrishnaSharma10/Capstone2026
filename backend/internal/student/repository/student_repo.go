@@ -238,3 +238,23 @@ func UpdateFeesLinkById(id string, fee_receipt_link string) error {
 
 	return nil
 }
+
+// angad notifications
+func GetNotificationsFromDB() ([]bson.M, error) {
+	notificationDetails := database.MongoDB.Collection("notificationDetails")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := notificationDetails.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var notifications []bson.M
+	if err := cursor.All(ctx, &notifications); err != nil {
+		return nil, err
+	}
+	return notifications, nil
+}

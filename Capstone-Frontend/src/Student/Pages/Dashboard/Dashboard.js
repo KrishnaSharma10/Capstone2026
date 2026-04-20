@@ -7,7 +7,8 @@ import { UserContext } from '../../../UserContext'
 import Logout from '../../Components/Logout'
 import "react-tooltip/dist/react-tooltip.css";
 import { Tooltip } from "react-tooltip";
-
+/*angad announcements*/
+import NotificationBox from '../../Components/NotificationBox';
 
 const Dashboard = () => {
   const { setStudent, student } = useContext(UserContext);
@@ -81,6 +82,14 @@ const Dashboard = () => {
     }));
     hasFetchedElectiveData.current = true;
   }
+  //angad announcements
+// const ed = electiveData?.[student?.elective_basket];
+// useEffect(() => {
+//   if (ed && !hasFetchedElectiveData.current) {
+//     setStudent(prev => ({ ...prev, electiveData: ed }));
+//     hasFetchedElectiveData.current = true;
+//   }
+// }, [ed]);
 
 
   return (
@@ -167,8 +176,14 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+<<<<<<< HEAD
 
+=======
+              {/* angad announcements */}
+      <NotificationBox />
+>>>>>>> 15c286e (Angad Dhawan announcements)
       </div>
+
     </div>
   )
 }

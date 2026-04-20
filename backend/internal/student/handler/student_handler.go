@@ -59,3 +59,11 @@ func CreateApplication(c *fiber.Ctx) error {
 func GetAllApplicationsByEmail(c *fiber.Ctx) error {
 	return service.GetAllApplicationsByEmail(c)
 }
+<<<<<<< HEAD
+=======
+
+// angad announcements
+func GetNotifications(c *fiber.Ctx) error {
+	return service.GetNotifications(c)
+}
+>>>>>>> 15c286e (Angad Dhawan announcements)
