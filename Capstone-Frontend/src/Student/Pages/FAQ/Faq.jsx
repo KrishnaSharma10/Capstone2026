@@ -11,7 +11,7 @@ const faqs = [
   },
   {
     question: "Do I still need to get physical signatures from coordinators or HODs?",
-    answer: "No. The portal offers a digital approval workflow that routes requests electronically to Coordinators, HODs, and DoAA."
+    answer: "No. The portal offers a fully integrated digital approval workflow. Once you submit your application, it is automatically routed electronically to your respective Coordinators, HODs, and finally the DoAA. You can track the real-time status of these approvals from the \"Status\" tab in the sidebar."
   },
   {
     question: "Can I access the portal on mobile devices?",
@@ -22,7 +22,7 @@ const faqs = [
     answer: "Yes. An AI-powered chatbot (coming soon) will answer common queries instantly. Until then, FAQs and help guides are available."
   },
   {
-    question: "What documents do I need to upload with my application (e.g., fee receipt, approvals)?",
+    question: "What documents do I need to upload with my application?",
     answer: "Typically, you will need to upload the improvement course fee receipt and any special approvals (like IEP approval for final-year students). Required documents are listed during the application process."
   }
 ];
@@ -30,37 +30,57 @@ const faqs = [
 const Faq = () => {
   const [openIndex, setOpenIndex] = useState(null);
 
-  const toggleAccordion = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
+  const toggle = (index) => setOpenIndex(openIndex === index ? null : index);
 
   return (
-    <div className="student-faq-main">
+    <div className="faq-page">
       <StudentSidebar />
-      <div className="student-main-faq-top-row">
-        <h1>FAQ & Help</h1>
-        <Logout />
-      </div>
-      <div className="student-faq-content">
-        <div className="student-faq-list">
-          {faqs.map((item, index) => (
-            <div
-              key={index}
-              className={`student-faq-item ${openIndex === index ? 'open' : ''}`}
-              onClick={() => toggleAccordion(index)}
-            >
-              <div className="student-faq-question">
-                <span>{item.question}</span>
-                <span className="faq-icon">{openIndex === index ? '−' : '+'}</span>
+      <Logout />
+
+      <div className="faq-main">
+
+        {/* Header */}
+        <p className="faq-eyebrow">Scholar Assistance</p>
+        <h1 className="faq-title">FAQ &amp; Help</h1>
+        <p className="faq-subtitle">
+          Welcome to the central knowledge base for the Improvement Course Portal.
+          Find answers to common administrative questions and workflow procedures.
+        </p>
+
+        {/* Accordion */}
+        <div className="faq-list">
+          {faqs.map((item, index) => {
+            const isOpen = openIndex === index;
+            return (
+              <div
+                key={index}
+                className={`faq-item ${isOpen ? 'faq-item--open' : ''}`}
+                onClick={() => toggle(index)}
+              >
+                <div className="faq-item__header">
+                  <span className="faq-item__question">{item.question}</span>
+                  <span className="faq-item__icon">{isOpen ? '×' : '+'}</span>
+                </div>
+                {isOpen && (
+                  <p className="faq-item__answer">{item.answer}</p>
+                )}
               </div>
-              {openIndex === index && (
-                <div className="student-faq-answer">{item.answer}</div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
+
+        {/* Contact banner */}
+        <div className="faq-banner">
+          <span className="faq-banner__icon">?</span>
+          <h3 className="faq-banner__heading">Need direct assistance?</h3>
+          <p className="faq-banner__sub">
+            If you cannot find your answer here, our academic coordinators are ready to help.
+          </p>
+          <button className="faq-banner__btn">Contact Support</button>
+        </div>
+
       </div>
-      <NotificationBox message={"NotificationBox message NotificationBox message NotificationBox message NotificationBox message NotificationBox message NotificationBox message NotificationBox message NotificationBox message"}/>
+
     </div>
   );
 };
