@@ -84,7 +84,27 @@ thead th {
     cursor: pointer;
     user-select: none;
 }
+.doaa-timetable-toggle {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+}
 
+.toggle-btn {
+    padding: 8px 20px;
+    border: 2px solid #c0392b;
+    border-radius: 6px;
+    background: white;
+    color: #c0392b;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toggle-btn.active {
+    background: #c0392b;
+    color: white;
+}
 
 
 .action-btn {

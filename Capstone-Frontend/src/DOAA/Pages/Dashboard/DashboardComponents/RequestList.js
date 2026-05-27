@@ -10,7 +10,7 @@ const PendingTable = ({ data, requestType, department }) => {
     
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [selectedDetailsRow, setSelectedDetailsRow] = useState(null); // NEW
-    
+    const [activeTab, setActiveTab] = useState('new');
 
     const handleSort = (key) => {
         let direction = 'asc';
@@ -41,9 +41,10 @@ const PendingTable = ({ data, requestType, department }) => {
     };
 
     const showDetailsPopup = (row) => {
-        setSelectedDetailsRow(row);
-        setIsPopupOpen(true);
-    };
+    setSelectedDetailsRow(row);
+    setActiveTab('new');  // ← ADD
+    setIsPopupOpen(true);
+};
 
     const closeDetailsPopup = () => {
         setIsPopupOpen(false);
@@ -106,7 +107,25 @@ const PendingTable = ({ data, requestType, department }) => {
                         {selectedDetailsRow?.opted_courses.map((val, ind) => {
                             return <h4>- {val[0]} opted with {val[1]}</h4>
                         })}
-                        <Timetable data={selectedDetailsRow?.new_time_table} ed={selectedDetailsRow?.elective_data} />
+                        <div className="doaa-timetable-toggle">
+    <button
+        className={`toggle-btn ${activeTab === 'current' ? 'active' : ''}`}
+        onClick={() => setActiveTab('current')}
+    >
+        Current Timetable
+    </button>
+    <button
+        className={`toggle-btn ${activeTab === 'new' ? 'active' : ''}`}
+        onClick={() => setActiveTab('new')}
+    >
+        New Timetable
+    </button>
+</div>
+
+{activeTab === 'current'
+    ? <Timetable data={selectedDetailsRow?.current_time_table} ed={selectedDetailsRow?.elective_data} />
+    : <Timetable data={selectedDetailsRow?.new_time_table} ed={selectedDetailsRow?.elective_data} />
+}
                         <h4>
                             Application Form Link:{" "}
                             <a href={selectedDetailsRow?.url} target="_blank" rel="noopener noreferrer">

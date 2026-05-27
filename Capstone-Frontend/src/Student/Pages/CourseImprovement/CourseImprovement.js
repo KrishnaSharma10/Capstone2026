@@ -165,6 +165,8 @@ const CourseImprovement = () => {
 
 
   const handleSubmit3 = (choice, newTimeTable) => {
+    console.log("current timetable:", student.timeTableData);
+    console.log("new timetable sample:", newTimeTable[0]);
     const arr = Object.entries(choice).map(([code, sgs]) => [
     code,
     `Lecture: ${sgs.lecture_sg || '-'}, Lab: ${sgs.lab_sg || '-'}, Tutorial: ${sgs.tutorial_sg || '-'}`
@@ -176,14 +178,15 @@ const CourseImprovement = () => {
     };
 
     const data = {
-      "email": student.thapar_email,
-      "opted_courses": arr,
-      "message": "",
-      "clashing": newTimeTable.some(event => event.clash),
-      "new_time_table": newTimeTable,
-      "elective_data": student.electiveData,
-      "cgpa": cgpa
-    };
+  "email": student.thapar_email,
+  "opted_courses": arr,
+  "message": "",
+  "clashing": newTimeTable.some(event => event.clash),
+  "new_time_table": newTimeTable,
+  "current_time_table": student.timeTableData,  // ← ADD THIS
+  "elective_data": student.electiveData,
+  "cgpa": cgpa
+};
 
     const formData = new FormData();
     formData.append("mainData", data);
@@ -394,5 +397,7 @@ const CourseImprovement = () => {
     </div>
   );
 };
+
+
 
 export default CourseImprovement;
