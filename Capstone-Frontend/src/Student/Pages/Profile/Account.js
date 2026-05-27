@@ -1,228 +1,177 @@
-import * as React from 'react';
-import {
-  Container,
-  Grid,
-  Box,
-  TextField,
-  Typography,
-  Button,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel
-} from '@mui/material';
-
-import StudentSidebar from '../../Components/Sidebar';
-import SaveIcon from '@mui/icons-material/CheckCircle'; //icons import kiya hai mui se
+import React from 'react';
 import axios from 'axios';
 import { UserContext } from '../../../UserContext';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import Logout from '../../Components/Logout';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import StudentSidebar from '../../Components/Sidebar';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import './Account.css';
 
+/* ─── Field definitions ─────────────────────────────────────────────── */
+function buildFields(student, subgroups, electives) {
+  if (!student) return [];
+  return [
+    { label: 'Name',            value: student.name,                        section: 'identity' },
+    { label: 'Roll Number',     value: student.roll_no,                     section: 'identity' },
+    { label: 'Academic Year',   value: student.academic_year,               section: 'identity', type: 'select', options: ['1', '2', '3', '4'] },
+    { label: 'Branch',          value: student.branch,                      section: 'course', type: 'select', options: ['COE', 'MECH', 'CIVIL', 'ECE', 'EEE'] },
+    { label: 'Sub Group',         value: student.subgroup,                    section: 'course', type: 'select', options: subgroups },
+    { label: 'Elective Basket 1', value: student.elective_basket,             section: 'course', type: 'select', options: electives },
+    { label: 'Elective Basket 2', value: student.general_elective ?? 'None',  section: 'course', type: 'select', options: ['None', 'Cyber Security', 'EDS', 'French', 'Graph Theory'] },
+    // { label: 'Phone Number',      value: student.phone_number,                section: 'identity' },
+  ];
+}
 
-  const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
-
-
+/* ─── Component ─────────────────────────────────────────────────────── */
 export default function Account() {
-
   const navigate = useNavigate();
+  const { student, setStudent } = React.useContext(UserContext);
 
+  const [subgroups, setSubgroups] = React.useState([]);
+  const [electives, setElectives] = React.useState([]);
+  const [fields,    setFields]    = React.useState([]);
 
-  const {student, setStudent} = React.useContext(UserContext);
-  const [subgroupList, setSubgroupList] = React.useState([]);
-  const [electiveBasketList, setElectiveBasketList] = React.useState([]);
-
-  //Objects ki array banayi hai, setField update karta hai field array ko
-  const [fields, setFields] = React.useState([]);
-  const generateFields = (subgroups, electives) => {
-    console.log(student);
-    if (!student) 
-      return [];
-
-    return [
-    { label: 'Name', value: student.name },
-    { label: 'Roll Number', value: student.roll_no },
-    { label: 'Academic Year', value: student.academic_year, type: 'select', options: ['1', '2', '3', '4'] },
-    { label: 'Branch', value: student.branch, type: 'select', options: ['COE', 'MECH', 'CIVIL', 'ECE', 'EEE'] },
-    { label: 'Sub Group', value: student.subgroup, type: 'select', options: subgroups },
-    { label: 'Elective Basket 1', value: student.elective_basket, type: 'select', options: electives },
-    { label: 'Elective Basket 2', value: 'None', type: 'select', options: ['None', 'Cyber Security', 'EDS', 'French', 'Graph Theory'] },
-    { label: 'Phone Number', value: student.phone_number }
-  ]};
-
+  /* Fetch dropdown lists whenever student changes */
   React.useEffect(() => {
-    var subgroups = [];
-    var electives = [];
-    // Get subgroups list
-    axios.get("http://127.0.0.1:5000/api/student/get-subgroup-name-list")
-      .then((res) => {
-        //keep only those subgroups in list whose 1st charecter === academic year
-        subgroups = res.data["subgroupList"];
-        setSubgroupList(res.data["subgroupList"]);
-        setFields((prevFields) => generateFields(subgroups, electiveBasketList));
-      })
-      .catch(() => {
-        toast.error('Failed to load subgroup data, please retry!');
-      });
+    let sg = [], el = [];
 
-    // Get electives list
-    axios.get("http://127.0.0.1:5000/api/student/get-elective-basket-list")
-      .then((res) => {
-        electives = res.data["electiveBasketList"];
-        setElectiveBasketList(res.data["electiveBasketList"]);
-        setFields((prevFields) => generateFields(subgroups, electives));
-        console.log(res.data["electiveBasketList"]);
+    axios.get('http://127.0.0.1:5000/api/student/get-subgroup-name-list')
+      .then(res => {
+        sg = res.data['subgroupList'];
+        setSubgroups(sg);
+        setFields(buildFields(student, sg, el));
       })
-      .catch(() => {
-        toast.error('Failed to load elective data, please retry!');
-      });
-    // const list = ["High Performance Computing", "Computer Animation and Gaming", "Information and Cyber Security", "Mathematics and Computing", "Data Science", "Financial Derivative", "DevOps and Continuous Delivery", "Full Stack", "Conversational AI", "Robotics and Edge AI", "Cyber Forensics and Ethical Hacking", "None" ];
-    // setElectiveBasketList(list);
+      .catch(() => toast.error('Failed to load subgroup data, please retry!'));
+
+    axios.get('http://127.0.0.1:5000/api/student/get-elective-basket-list')
+      .then(res => {
+        el = res.data['electiveBasketList'];
+        setElectives(el);
+        setFields(buildFields(student, sg, el));
+      })
+      .catch(() => toast.error('Failed to load elective data, please retry!'));
   }, [student]);
 
-
-
-
-  //specfic field ki value update karne liye function agar user form mein kuch type karta hai ya phir select karta hai
-  const handleFieldChange = (index, newValue) => {
-    const updatedFields = [...fields]; //feilds array ki copy banata hai
-    updatedFields[index].value = newValue; // feild ki value ko update karta hai
-    setFields(updatedFields); //detFeild ko update karta hai aur react re render kar deta hai ui ko latest feild value ke according
+  /* Update a single field value */
+  const handleChange = (index, value) => {
+    setFields(prev => {
+      const next = [...prev];
+      next[index] = { ...next[index], value };
+      return next;
+    });
   };
 
-// Jab user 'Save Changes' button dabata hai,
-// to yeh function call hota hai.
+  /* Save and navigate */
+  const handleSave = () => {
+    const map = {};
+    fields.forEach(f => { map[f.label] = f.value; });
 
-const handleSave = () => {
-  const result = {};
+    const updated = {
+      ...student,
+      name:             map['Name'],
+      roll_no:          map['Roll Number'],
+      academic_year:    map['Academic Year'],
+      branch:           map['Branch'],
+      subgroup:         map['Sub Group'],
+      elective_basket:  map['Elective Basket 1'],
+      general_elective: map['Elective Basket 2'],
+      phone_number:     map['Phone Number'],
+    };
 
-  fields.forEach(field => {
-    result[field.label] = field.value;
-  });
+    setStudent(updated);
 
-  console.log(result);
-
-  const updatedStudent = {
-    ...student,
-    name: result['Name'],
-    roll_no: result['Roll Number'],
-    academic_year: result['Academic Year'],
-    branch: result['Branch'],
-    subgroup: result['Sub Group'],
-    elective_basket: result['Elective Basket 1'],
-    general_elective: result['Elective Basket 2'],
-    phone_number: result['Phone Number']
+    const token = localStorage.getItem('ICMPTokenStudent');
+    axios.post('http://127.0.0.1:5000/api/student/update-details', updated, {
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    })
+      .then(() => {
+        toast.success('Details updated successfully!');
+        navigate('/student/dashboard');
+      })
+      .catch(err => {
+        console.error(err);
+        toast.error('Failed to update details. Please try again.');
+      });
   };
 
-  // Update context
-  setStudent(updatedStudent);
+  /* Render a single form field */
+  const renderField = (field, globalIndex) => (
+    <div key={globalIndex}>
+      <label className="account-field__label">{field.label}</label>
+      {field.type === 'select' ? (
+        <select
+          className="account-field__select"
+          value={field.value ?? ''}
+          onChange={e => handleChange(globalIndex, e.target.value)}
+        >
+          {(field.options || []).map((opt, i) => (
+            <option key={i} value={opt}>{opt}</option>
+          ))}
+        </select>
+      ) : (
+        <input
+          className="account-field__input"
+          value={field.value ?? ''}
+          onChange={e => handleChange(globalIndex, e.target.value)}
+        />
+      )}
+    </div>
+  );
 
-  const token = localStorage.getItem("ICMPTokenStudent");
-  axios.post("http://127.0.0.1:5000/api/student/update-details", updatedStudent, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-        })
-  .then(() => {
-    toast.success("Details updated successfully!");
-    navigate("/student/dashboard");
-  })
-  .catch((error) => {
-    console.log(error);
-    toast.error("Failed to update details. Please try again.");
-  });
-
-};
-
-
-
-// return mein pura UI define ho raha hai:
-// 1. Welcome text dikh raha hai.
-// 2. fields array ko loop karke form ban raha hai
-//    - Agar dropdown hai to Select
-//    - Agar normal input hai to TextField
-// 3. Last mein ek Save button hai jo data console mein print karta hai
+  const identityFields = fields.filter(f => f.section === 'identity');
+  const courseFields   = fields.filter(f => f.section === 'course');
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <Box alignItems="flex-start">
-      <StudentSidebar/>
-      <Logout />
-      <Container >
-        
-      </Container>
-    <Container maxWidth="md">
-      <Box sx={{ textAlign: 'left', mt: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'blue' }}>
-          Welcome !
-        </Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
-          {student?.name || "Loading..."}
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 0.5, color: 'gray' }}>
-          Edit Your Info Here
-        </Typography>
-      </Box>
+    <div className="account-page">
+      <StudentSidebar />
 
-      <Box sx={{ mt: 4 }}>
-        <Grid container spacing={9}>
-          {fields.map((field, index) => (
-            <Grid item xs={12} sm={6} key={index}>
-              <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                {field.label}
-              </Typography>
+      <div className="account-main">
 
-              {field.type === 'select' ? (
-                <FormControl fullWidth size="small" variant="outlined">
-                  
-                  <Select
-                    value={field.value}
-                    
-                    onChange={(e) => handleFieldChange(index, e.target.value)}
-                  >
-                    {field.options.map((option, i) => (
-                      <MenuItem key={i} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              ) : (
-                <TextField
-                  fullWidth
-                  size="small"
-                  variant="outlined"
-                  value={field.value}
-                  onChange={(e) => handleFieldChange(index, e.target.value)}
-                />
-              )}
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
+        {/* Breadcrumb */}
+        <p className="account-breadcrumb">
+          <span className="account-breadcrumb__name">{student?.name || 'Student'}</span>
+          <span className="account-breadcrumb__sep">/</span>
+          Account Settings
+        </p>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Button
-          variant="contained"
-          color="success"
-          endIcon={<SaveIcon />}
-          onClick={handleSave}
-        >
-          Save Changes
-        </Button>
-      </Box>
-    </Container>
-    </Box>
-    </ThemeProvider>
-    
+        {/* Welcome */}
+        <p className="account-welcome">Welcome !</p>
+        <p className="account-edit-hint">Edit Your Info Here</p>
+
+        {/* Card */}
+        <div className="account-card">
+
+          {/* Academic Identity */}
+          <p className="account-section-title">Student Details</p>
+          <div className="account-grid">
+            {identityFields.map((f, i) => renderField(f, i))}
+          </div>
+
+          <hr className="account-divider" />
+
+          {/* Course Selection */}
+          <p className="account-section-title">Academic Information</p>
+          <div className="account-grid">
+            {courseFields.map((f, i) => renderField(f, identityFields.length + i))}
+          </div>
+
+          {/* Footer row */}
+          <div className="account-footer">
+            <span className="account-footer__note">
+              <span className="account-footer__note-icon">ⓘ</span>
+              Changes may take up to 24 hours to reflect in the main directory.
+            </span>
+            <button className="account-save-btn" onClick={handleSave}>
+              Save Changes <CheckCircleIcon style={{ fontSize: 16 }} />
+            </button>
+          </div>
+
+        </div>
+
+        {/* Editorial watermark */}
+        <p className="account-editorial">The Academic Editorial</p>
+
+      </div>
+    </div>
   );
 }

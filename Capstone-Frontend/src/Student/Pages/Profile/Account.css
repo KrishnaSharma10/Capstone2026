@@ -1,0 +1,214 @@
+/* ── Account Settings Page ────────────────────────────────────────── */
+
+.account-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f6f6f6;
+  min-height: 100vh;
+}
+
+.account-main {
+  padding: 30px;
+  width: 100%;
+  max-width: 860px;
+}
+
+/* ── Breadcrumb ───────────────────────────────────────────────────── */
+
+.account-breadcrumb {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.account-breadcrumb__name {
+  color: #333;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.account-breadcrumb__sep {
+  margin: 0 6px;
+  color: #ccc;
+}
+
+/* ── Welcome header ───────────────────────────────────────────────── */
+
+.account-welcome {
+  font-size: 12px;
+  color: #d60000;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 0 0 2px;
+  text-transform: uppercase;
+}
+
+.account-edit-hint {
+  font-size: 12px;
+  color: #777;
+  font-style: italic;
+  margin: 0 0 24px;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────── */
+
+.account-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px 28px 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Section title ────────────────────────────────────────────────── */
+
+.account-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #d60000;
+  margin: 0 0 18px;
+  text-transform: uppercase;
+}
+
+/* ── Divider ──────────────────────────────────────────────────────── */
+
+.account-divider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 24px 0;
+}
+
+/* ── 4-column field grid ──────────────────────────────────────────── */
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px 20px;
+}
+
+/* ── Individual field ─────────────────────────────────────────────── */
+
+.account-field__label {
+  display: block;
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 5px;
+  letter-spacing: 0.3px;
+}
+
+.account-field__input,
+.account-field__select {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #222;
+  background: #fff;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.account-field__input:focus {
+  outline: none;
+  border-color: #d60000;
+  box-shadow: 0 0 0 2px rgba(214, 0, 0, 0.08);
+}
+
+.account-field__select {
+  appearance: auto;
+  cursor: pointer;
+}
+
+.account-field__select:focus {
+  outline: none;
+  border-color: #d60000;
+  box-shadow: 0 0 0 2px rgba(214, 0, 0, 0.08);
+}
+
+/* ── Footer row ───────────────────────────────────────────────────── */
+
+.account-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 28px;
+}
+
+.account-footer__note {
+  font-size: 12px;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.account-footer__note-icon {
+  font-size: 15px;
+}
+
+/* ── Save button ──────────────────────────────────────────────────── */
+
+.account-save-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #d60000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.account-save-btn:hover {
+  background-color: #b30000;
+  box-shadow: 0 4px 12px rgba(214, 0, 0, 0.25);
+}
+
+/* ── Editorial watermark ──────────────────────────────────────────── */
+
+.account-editorial {
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: #ccc;
+  margin-top: 36px;
+  text-transform: uppercase;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .account-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .account-main {
+    padding: 20px 16px;
+  }
+
+  .account-card {
+    padding: 20px 16px 16px;
+  }
+
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+}
