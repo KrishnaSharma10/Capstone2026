@@ -176,12 +176,8 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-<<<<<<< HEAD
-
-=======
               {/* angad announcements */}
       <NotificationBox />
->>>>>>> 15c286e (Angad Dhawan announcements)
       </div>
 
     </div>

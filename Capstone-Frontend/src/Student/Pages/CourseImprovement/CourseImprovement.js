@@ -165,7 +165,10 @@ const CourseImprovement = () => {
 
 
   const handleSubmit3 = (choice, newTimeTable) => {
-    const arr = Object.entries(choice);
+    const arr = Object.entries(choice).map(([code, sgs]) => [
+    code,
+    `Lecture: ${sgs.lecture_sg || '-'}, Lab: ${sgs.lab_sg || '-'}, Tutorial: ${sgs.tutorial_sg || '-'}`
+  ]);
 
     if (cgpa.trim() === '') {
       toast.error("Must enter the CGPA");
