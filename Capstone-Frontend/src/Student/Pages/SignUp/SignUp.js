@@ -1,345 +1,276 @@
-import React, { useEffect, useState } from "react";
-import "./SignUp.css"; // reuse your existing styles
-import { ToastContainer, toast } from 'react-toastify';
-import axios from 'axios';
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import "./SignUp.css";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const ICMPSignUp = () => {
+/* ── Icons ── */
+const ArrowIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+);
+
+const BackIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+/* ── Static data ── */
+const BRANCHES        = ["COE", "MECH", "CIVIL", "ECE", "EEE", "BT", "CHE"];
+const DEPARTMENTS     = ["CSED", "ECED", "MED", "CED", "BED", "CHED", "MATH"];
+const ELECTIVE_BASKETS = [
+  "None", "Financial Derivative", "Data Science", "High Performance Computing",
+  "Computer Animation and Gaming", "Information and Cyber Security",
+  "Mathematics and Computing", "DevOps and Continuous Delivery", "Full Stack",
+  "Conversational AI", "Robotics and Edge AI", "Cyber Forensics and Ethical Hacking",
+];
+const GENERIC_ELECTIVES = [
+  "None", "Campus to Corporate", "Corporate Finance",
+  "French", "Graph Theory", "Cyber Security", "EDS",
+];
+const STEPS = ["Personal", "Academic", "Credentials"];
+
+const Field = ({ label, children }) => (
+  <div className="icmp_field_group">
+    <div className="icmp_section_label">{label}</div>
+    {children}
+  </div>
+);
+
+const SignUp = () => {
   const navigate = useNavigate();
 
-  const notifySuccess = () => {
-    toast.success('Successfully Signed Up! Now go to mail and click verification link!', {
-      position: 'top-right',
-      autoClose: 4000,
-    });
-  };
+  const [step, setStep]         = useState(1);
+  const [subgroups, setSubgroups] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [subgroupList, setSubgroupList] = useState([]);
-  const [electiveBasketList, setElectiveBasketList] = useState([]);
-  const [subgroupOptions, setSubgroupOptions] = useState([]);
-  const [step, setStep] = useState(1);
-
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     name: "",
-    roll: "",
-    year: "",
-    branch: "",
+    roll_no: "",
+    phone_number: "",
+    academic_year: "1",
+    branch: "COE",
+    department: "CSED",
     subgroup: "",
-    elective: "",
-    thaparid: "",
-    phone: "",
+    elective_basket: "None",
+    general_elective: "None",
+    thapar_email: "",
     password: "",
     confirmPassword: "",
   });
 
   useEffect(() => {
-    // Get subgroups list
     axios.get("http://127.0.0.1:5000/api/student/get-subgroup-name-list")
-      .then((res) => {
-        setSubgroupList(res.data["subgroupList"]);
+      .then(res => {
+        const list = res.data["subgroupList"] || [];
+        setSubgroups(list);
+        if (list.length > 0) setForm(f => ({ ...f, subgroup: list[0] }));
       })
-      .catch(() => {
-        toast.error('Failed to load subgroup data, please retry!');
-      });
-
-    // Get electives list
-    axios.get("http://127.0.0.1:5000/api/student/get-elective-basket-list")
-      .then((res) => {
-        setElectiveBasketList(res.data["electiveBasketList"]);
-      })
-      .catch(() => {
-        toast.error('Failed to load elective data, please retry!');
-      });
+      .catch(() => toast.error("Failed to load subgroups"));
   }, []);
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
+
+  const validateStep = () => {
+    if (step === 1) {
+      if (!form.name.trim())                      { toast.error("Name is required");                    return false; }
+      if (!form.roll_no.trim())                   { toast.error("Roll number is required");             return false; }
+      if (!/^\d{10}$/.test(form.phone_number))    { toast.error("Enter a valid 10-digit phone number"); return false; }
+    }
+    if (step === 3) {
+      if (!form.thapar_email.endsWith("@thapar.edu")) { toast.error("Email must end with @thapar.edu");            return false; }
+      if (form.password.length < 6)                   { toast.error("Password must be at least 6 characters");     return false; }
+      if (form.password !== form.confirmPassword)      { toast.error("Passwords do not match");                    return false; }
+    }
+    return true;
   };
 
-  const handleNext = (currentStep, nextStep) => {
-    if (currentStep === 1) {
-      if (!formData.name || !formData.roll || !formData.year) {
-        alert("Please fill all fields.");
-        return;
-      }
-
-      // Filter subgroups based on year
-      const yearValue = formData.year.trim();
-      if (yearValue >= 1 && yearValue <= 4) {
-        const filteredOptions = subgroupList.filter(item => item.startsWith(`${yearValue}CO`));
-        setSubgroupOptions(filteredOptions);
-      }
-    }
-
-    if (currentStep === 2) {
-      if (!formData.branch || !formData.subgroup || !formData.elective) {
-        alert("Please fill all fields.");
-        return;
-      }
-    }
-
-    setStep(nextStep);
-  };
+  const nextStep = () => { if (validateStep()) setStep(s => s + 1); };
+  const prevStep = () => setStep(s => s - 1);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const { thaparid, phone, password, confirmPassword } = formData;
+  e.preventDefault();
 
-    if (!thaparid || !phone || !password || !confirmPassword) {
-      alert("Please fill all fields.");
-      return;
-    }
+  if (!validateStep()) return;
 
-    if (!/^[a-zA-Z0-9._%+-]+@thapar\.edu$/.test(thaparid)) {
-      alert("Please enter a valid Thapar email ending with @thapar.edu.");
-      return;
-    }
+  setIsSubmitting(true);
 
-    if (!/^\d{10}$/.test(phone)) {
-      alert("Please enter a valid 10-digit phone number.");
-      return;
-    }
+  const payload = { ...form };
+  delete payload.confirmPassword;
 
-    if (password !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
-    }
+  try {
+    const res = await axios.post(
+      "http://127.0.0.1:5000/api/student/register",
+      payload
+    );
 
-    const data = {
-      name: formData.name,
-      roll_no: formData.roll,
-      academic_year: formData.year,
-      branch: formData.branch,
-      subgroup: formData.subgroup,
-      thapar_email: formData.thaparid,
-      elective_basket: formData.elective,
-      general_elective: "",
-      phone_number: formData.phone,
-      password: formData.password,
-      verified: false,
-    };
+    if ([200, 201, 202].includes(res.status)) {
+      toast.success("Registration successful!");
 
-    setFormData({
-    name: "",
-    roll: "",
-    year: "",
-    branch: "",
-    subgroup: "",
-    elective: "",
-    thaparid: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-    try {
-      const res = await axios.post("http://127.0.0.1:5000/api/student/register", data);
-      if(res.status === 202){
-        notifySuccess();
+      setTimeout(() => {
         navigate("/login");
-      }
-    } catch(error) {
-      console.log(error);
-      if(error.response){
-        if(error.response.status === 400)
-          toast.error(error.response.data.error);
-      }
-      else
-        toast.error('Submission failed');
+      }, 1500);
     }
-  };
+  } catch (err) {
+    toast.error(
+      err.response?.data?.error ||
+      "Registration failed. Please try again."
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <>
-      <div className="background"></div>
-      <div className="overlay"></div>
-      <img src="/logo.png" alt="Logo" className="logo" />
-      <div className="container">
-        <div className="title">Improvement Course Management Portal</div>
+      <div className="icmp_login_background" />
+      <div className="icmp_login_overlay" />
+      <img src="/logo.png" alt="Logo" className="icmp_login_logo" />
 
-        <div className="form-box">
-          <h2>ICMP</h2>
-          <h3>Sign Up</h3>
+      <div className="icmp_login_container">
+        <div className="icmp_login_form_box icmp_signup_box">
 
-          {/* Step 1 */}
+          {/* Branding */}
+          <div className="icmp_login_brand">
+            <h2>Improvement Course Management Portal</h2>
+            <p>THAPAR INSTITUTE OF ENGINEERING AND TECHNOLOGY</p>
+          </div>
+
+          {/* Progress bar */}
+          <div className="icmp_progress_row">
+            {STEPS.map((label, i) => {
+              const num    = i + 1;
+              const done   = step > num;
+              const active = step === num;
+              return (
+                <React.Fragment key={label}>
+                  <div className={`icmp_step_dot${done ? " done" : ""}${active ? " active" : ""}`}>
+                    {done ? <CheckIcon /> : <span>{num}</span>}
+                  </div>
+                  <div className={`icmp_step_label${active ? " active" : ""}`}>{label}</div>
+                  {i < STEPS.length - 1 && (
+                    <div className={`icmp_step_line${step > num ? " done" : ""}`} />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+
+          {/* ── Step 1: Personal ── */}
           {step === 1 && (
-            <div className="form-step active">
-              <form>
-                <label htmlFor="name">Name</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  placeholder="Your Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-
-                <label htmlFor="roll">Roll Number</label>
-                <input
-                  type="text"
-                  id="roll"
-                  name="roll"
-                  placeholder="Your Roll Number"
-                  value={formData.roll}
-                  onChange={handleChange}
-                  required
-                />
-
-                <label htmlFor="year">Academic Year</label>
-                <input
-                  list="year-options"
-                  id="year"
-                  name="year"
-                  placeholder="Academic Year"
-                  value={formData.year}
-                  onChange={handleChange}
-                  required
-                />
-                <datalist id="year-options">
-                  <option value="1" />
-                  <option value="2" />
-                  <option value="3" />
-                  <option value="4" />
-                </datalist>
-
-                <button type="button" onClick={() => handleNext(1, 2)}>
-                  Next ➤
-                </button>
-              </form>
+            <div className="icmp_step_content">
+              <Field label="Full Name">
+                <input placeholder="e.g. Krishna Sharma" value={form.name} onChange={set("name")} autoComplete="off" />
+              </Field>
+              <Field label="Roll Number">
+                <input placeholder="e.g. 102203758" value={form.roll_no} onChange={set("roll_no")} autoComplete="off" />
+              </Field>
+              <Field label="Phone Number">
+                <input placeholder="10-digit mobile number" value={form.phone_number} onChange={set("phone_number")} autoComplete="off" />
+              </Field>
+              <Field label="Academic Year">
+                <select value={form.academic_year} onChange={set("academic_year")}>
+                  {["1","2","3","4"].map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </Field>
+              <button type="button" className="icmp_login_submit_btn" onClick={nextStep}>
+                Continue <ArrowIcon />
+              </button>
             </div>
           )}
 
-          {/* Step 2 */}
+          {/* ── Step 2: Academic ── */}
           {step === 2 && (
-            <div className="form-step active">
-              <form>
-                <label htmlFor="branch">Branch</label>
-                <input
-                  list="branch-options"
-                  id="branch"
-                  name="branch"
-                  placeholder="Type or select branch"
-                  value={formData.branch}
-                  onChange={handleChange}
-                  required
-                />
-                <datalist id="branch-options">
-                  <option value="COE/CSE" />
-                  <option value="MECH" />
-                  <option value="CIVIL" />
-                  <option value="ECE" />
-                  <option value="EEE" />
-                  <option value="IT" />
-                </datalist>
-
-                <label htmlFor="subgroup">Subgroup</label>
-                <input
-                  list="subgroup-options"
-                  id="subgroup"
-                  name="subgroup"
-                  placeholder="Type or select subgroup"
-                  value={formData.subgroup}
-                  onChange={handleChange}
-                  required
-                />
-                <datalist id="subgroup-options">
-                  {subgroupList
-                    .filter((option) => option[0] === formData.year)
-                    .map((option, index) => (
-                      <option key={index} value={option} />
-                    ))}
-                </datalist>
-
-
-                <label htmlFor="elective">Elective Basket</label>
-                <input
-                  list="elective-options"
-                  id="elective"
-                  name="elective"
-                  placeholder="Type or select elective"
-                  value={formData.elective}
-                  onChange={handleChange}
-                  required
-                />
-                <datalist id="elective-options">
-                  {electiveBasketList.map((option) => (
-                    <option key={option} value={option} />
-                  ))}
-                </datalist>
-
-                <button type="button" onClick={() => handleNext(2, 3)}>
-                  Next ➤
+            <div className="icmp_step_content">
+              <div className="icmp_two_col">
+                <Field label="Branch">
+                  <select value={form.branch} onChange={set("branch")}>
+                    {BRANCHES.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </Field>
+                <Field label="Department">
+                  <select value={form.department} onChange={set("department")}>
+                    {DEPARTMENTS.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </Field>
+              </div>
+              <Field label="Sub Group">
+                <select value={form.subgroup} onChange={set("subgroup")}>
+                  {(subgroups.length ? subgroups : ["Loading..."]).map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </Field>
+              <Field label="Elective Basket">
+                <select value={form.elective_basket} onChange={set("elective_basket")}>
+                  {ELECTIVE_BASKETS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </Field>
+              <Field label="Generic Elective">
+                <select value={form.general_elective} onChange={set("general_elective")}>
+                  {GENERIC_ELECTIVES.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </Field>
+              <div className="icmp_btn_row">
+                <button type="button" className="icmp_back_btn" onClick={prevStep}>
+                  <BackIcon /> Back
                 </button>
-              </form>
+                <button type="button" className="icmp_login_submit_btn icmp_flex1" onClick={nextStep}>
+                  Continue <ArrowIcon />
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Step 3 */}
+          {/* ── Step 3: Credentials ── */}
           {step === 3 && (
-            <div className="form-step active">
-              <form onSubmit={handleSubmit}>
-                <label htmlFor="thaparid">Thapar Id</label>
-                <input
-                  type="email"
-                  id="thaparid"
-                  name="thaparid"
-                  placeholder="yourid@thapar.edu"
-                  value={formData.thaparid}
-                  onChange={handleChange}
-                  required
-                />
-
-                <label htmlFor="phone">Phone Number</label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  placeholder="Your Phone Number"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                />
-
-                <label htmlFor="password">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-
-                <label htmlFor="confirmPassword">Confirm Password</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  placeholder="Confirm Password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                />
-
-                <button type="submit">Sign Up ➤</button>
-              </form>
-            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="icmp_step_content">
+                <Field label="Thapar Email (Thapar ID)">
+                  <input type="email" placeholder="username@thapar.edu" value={form.thapar_email} onChange={set("thapar_email")} autoComplete="off" />
+                </Field>
+                <Field label="Create Password">
+                  <input type="password" placeholder="Min. 6 characters" value={form.password} onChange={set("password")} />
+                </Field>
+                <Field label="Confirm Password">
+                  <input type="password" placeholder="Re-enter password" value={form.confirmPassword} onChange={set("confirmPassword")} />
+                </Field>
+                <p className="icmp_verify_note">
+                  ✉ A verification link will be sent to your Thapar email after registration.
+                </p>
+                <div className="icmp_btn_row">
+                  <button type="button" className="icmp_back_btn" onClick={prevStep}>
+                    <BackIcon /> Back
+                  </button>
+                  <button
+  type="submit"
+  className="icmp_login_submit_btn icmp_flex1"
+  disabled={isSubmitting}
+>
+  {isSubmitting ? "Registering..." : <>Register <CheckIcon /></>}
+</button>
+                </div>
+              </div>
+            </form>
           )}
 
-          <p>
-            Do you have an account? 
-            <Link to="/login">Login Here</Link>
+          <p className="icmp_register_footer">
+            Already have an account?{" "}
+            <span className="icmp-register-link" onClick={() => navigate("/login")}>Sign in here</span>
           </p>
+
         </div>
       </div>
     </>
   );
 };
 
-export default ICMPSignUp;
+export default SignUp;
