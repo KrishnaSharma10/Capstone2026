@@ -1,6 +1,5 @@
 package model
 
-
 type Coordinator struct {
 	Name        string `json:"name" bson:"name"`
 	Email       string `json:"email" bson:"email"`
@@ -11,8 +10,8 @@ type Coordinator struct {
 	TenureEnd   string `json:"tenureEnd" bson:"tenureEnd"`
 }
 
-type PasswordUpdation struct{
+type PasswordUpdation struct {
 	Email       string `json:"email" bson:"email"`
-	OldPassword    string `json:"old_password" bson:"old_password"`
-	NewPassword    string `json:"new_password" bson:"new_password"`
+	OldPassword string `json:"old_password" bson:"old_password"`
+	NewPassword string `json:"new_password" bson:"new_password"`
 }
