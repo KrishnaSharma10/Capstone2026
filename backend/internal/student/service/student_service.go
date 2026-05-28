@@ -346,6 +346,7 @@ func CreateApplication(c *fiber.Ctx) error {
 		application.Stage = 2
 	}
 	application.NewTimeTable = input.NewTimeTable
+	application.CurrentTimeTable = input.CurrentTimeTable // ← ADD THIS LINE
 	application.ElectiveData = input.ElectiveData
 
 	url := GenerateAndSaveApplication(application)

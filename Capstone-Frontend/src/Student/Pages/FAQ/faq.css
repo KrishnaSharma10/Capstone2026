@@ -1,81 +1,169 @@
-.student-faq-main {
-  /* display: flex; */
-  background-color: #1b1a1a;
-  padding: 30px;
-  /* background-color: #f9f9f9; */
-  margin-left: 250px;
+/* ── FAQ Page ─────────────────────────────────────────────────────── */
+
+.faq-page {
+  display: flex;
+  background: #f6f6f6;
   min-height: 100vh;
 }
 
-.student-main-faq-top-row{
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.student-main-faq-top-row h1{
-  font-weight: 600;
-  color: whitesmoke;
-}
-
-.student-faq-content {
-  margin-top: 50px;
+.faq-main {
   flex: 1;
+  margin-left: 100px;
+  padding: 40px 36px 60px;
+  box-sizing: border-box;
+}
+/* ── Header ───────────────────────────────────────────────────────── */
+
+.faq-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #d60000;
+  margin: 0 0 8px;
 }
 
-.student-faq-title {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 30px;
-  color: #333;
+.faq-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 12px;
 }
 
-.student-faq-list {
+.faq-subtitle {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.7;
+  margin: 0 0 32px;
+}
+
+/* ── Accordion list ───────────────────────────────────────────────── */
+
+.faq-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 0;
 }
 
-.student-faq-item {
-  background-color: #c2c2c2;
-  border-left: 4px solid rgb(139, 1, 1);
-  padding: 20px;
+/* ── Single accordion item ────────────────────────────────────────── */
+
+.faq-item {
+  background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  padding: 18px 20px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.student-faq-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+.faq-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.student-faq-question {
+.faq-item--open {
+  border-left-color: #d60000;
+}
+
+.faq-item__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #222;
+  gap: 16px;
 }
 
-.faq-icon {
-  font-size: 1.5rem;
-  color: rgb(139, 1, 1);
-  transition: transform 0.6s;
-}
-
-.student-faq-answer {
-  margin-top: 15px;
-  font-size: 1rem;
-  color: #032947;
+.faq-item__question {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
   line-height: 1.5;
-  animation: fadeIn 0.6s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+.faq-item__icon {
+  font-size: 20px;
+  font-weight: 300;
+  color: #d60000;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.faq-item--open .faq-item__icon {
+  transform: rotate(45deg);
+}
+
+.faq-item__answer {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.7;
+  animation: faqFadeIn 0.25s ease;
+}
+
+@keyframes faqFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Contact banner ───────────────────────────────────────────────── */
+
+.faq-banner {
+  margin-top: 32px;
+  background: #c0392b;
+  border-radius: 12px;
+  padding: 28px 28px 24px;
+  color: #fff;
+}
+
+.faq-banner__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.faq-banner__heading {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.faq-banner__sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 18px;
+  line-height: 1.5;
+}
+
+.faq-banner__btn {
+  background: #fff;
+  color: #c0392b;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+
+.faq-banner__btn:hover {
+  opacity: 0.9;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+
+@media (max-width: 700px) {
+  .faq-main {
+    margin-left: 0;
+    padding: 24px 16px 48px;
+  }
 }

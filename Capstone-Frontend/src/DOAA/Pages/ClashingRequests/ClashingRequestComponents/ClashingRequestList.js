@@ -15,7 +15,7 @@ const ClashingRequestList = ({ data, department }) => {
 
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [selectedDetailsRow, setSelectedDetailsRow] = useState(null); // NEW
-        
+    const [activeTab, setActiveTab] = useState('new');  // ← ADD at top  
 
     const handleSort = (key) => {
         let direction = 'asc';
@@ -85,10 +85,14 @@ const ClashingRequestList = ({ data, department }) => {
     };
 
 
-    const showDetailsPopup = (row) => {
-        setSelectedDetailsRow(row);
-        setIsPopupOpen(true);
-    };
+   
+
+// In showDetailsPopup:
+const showDetailsPopup = (row) => {
+    setSelectedDetailsRow(row);
+    setActiveTab('new');   // ← ADD reset here
+    setIsPopupOpen(true);
+};
 
     const closeDetailsPopup = () => {
         setIsPopupOpen(false);
@@ -188,32 +192,53 @@ const ClashingRequestList = ({ data, department }) => {
             )}
 
             {isPopupOpen && (
-                <div className="doaa-details-popup">
-                    <div className="doaa-popup-content2">
-                        <h1>Application Id: #{selectedDetailsRow?.application_id}</h1>
-                        <h5>Roll No: {selectedDetailsRow?.roll_no}</h5>
-                        <h5>Email: {selectedDetailsRow?.email}</h5>
-                        <h5>Subgroup: {selectedDetailsRow?.subgroup}</h5>
-                        {selectedDetailsRow?.opted_courses.map((val, ind) => {
-                            return <h4>- {val[0]} opted with {val[1]}</h4>
-                        })}
-                        <Timetable data={selectedDetailsRow?.new_time_table} ed={selectedDetailsRow?.elective_data} />
-                        <h4>
-                            Application Form Link:{" "}
-                            <a href={selectedDetailsRow?.url} target="_blank" rel="noopener noreferrer">
-                                Click Here
-                            </a>
-                        </h4>
-                        <h4>
-                            Fee Reciept Link:{" "}
-                            <a href={selectedDetailsRow?.fee_receipt_link} target="_blank" rel="noopener noreferrer">
-                                Click Here
-                            </a>
-                        </h4>
-                        <button onClick={closeDetailsPopup} className='doaa-popup-close-btn'>Close</button>
-                    </div>
-                </div>
-            )}
+    <div className="doaa-details-popup">
+        <div className="doaa-popup-content2">
+            <h1>Application Id: #{selectedDetailsRow?.application_id}</h1>
+            <h5>Roll No: {selectedDetailsRow?.roll_no}</h5>
+            <h5>Email: {selectedDetailsRow?.email}</h5>
+            <h5>Subgroup: {selectedDetailsRow?.subgroup}</h5>
+            {selectedDetailsRow?.opted_courses.map((val, ind) => (
+                <h4 key={ind}>- {val[0]} opted with {val[1]}</h4>
+            ))}
+
+            {/* ── TOGGLE ── */}
+            <div className="doaa-timetable-toggle">
+                <button
+                    className={`toggle-btn ${activeTab === 'current' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('current')}
+                >
+                    Current Timetable
+                </button>
+                <button
+                    className={`toggle-btn ${activeTab === 'new' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('new')}
+                >
+                    New Timetable
+                </button>
+            </div>
+
+            {activeTab === 'current'
+                ? <Timetable data={selectedDetailsRow?.current_time_table} ed={selectedDetailsRow?.elective_data} />
+                : <Timetable data={selectedDetailsRow?.new_time_table} ed={selectedDetailsRow?.elective_data} />
+            }
+
+            <h4>
+                Application Form Link:{" "}
+                <a href={selectedDetailsRow?.url} target="_blank" rel="noopener noreferrer">
+                    Click Here
+                </a>
+            </h4>
+            <h4>
+                Fee Reciept Link:{" "}
+                <a href={selectedDetailsRow?.fee_receipt_link} target="_blank" rel="noopener noreferrer">
+                    Click Here
+                </a>
+            </h4>
+            <button onClick={closeDetailsPopup} className='doaa-popup-close-btn'>Close</button>
+        </div>
+    </div>
+)}
         </div>
     );
 };
