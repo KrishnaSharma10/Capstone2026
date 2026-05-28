@@ -119,14 +119,14 @@ const Dashboard = () => {
           </div>
 
           <div className="card">
-            <p>BRANCH</p>
-            <h3>{student.branch}</h3>
-            <small>{student.subgroup}</small>
+            <p>BRANCH / DEPARTMENT</p>
+            <h3>{student.branch} / {student.department}</h3>
+            <small>Subgroup - {student.subgroup}</small>
           </div>
 
           <div className="card">
             <p>CURRENT YEAR</p>
-            <h1>{student.academic_year}</h1>
+            <h1>{student.academic_year}</h1>      
             <small></small>
           </div>
 
