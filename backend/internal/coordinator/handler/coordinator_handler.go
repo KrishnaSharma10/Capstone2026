@@ -20,3 +20,6 @@ func UpdateApplication(c *fiber.Ctx) error {
 func UpdateAllApplication(c *fiber.Ctx) error {
 	return service.UpdateAllApplication(c)
 }
+func GetApplicationsForCoordinator(c *fiber.Ctx) error {
+	return service.GetApplicationsForCoordinator(c)
+}

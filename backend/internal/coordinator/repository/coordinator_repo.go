@@ -54,7 +54,29 @@ func SetCoordinatorPassword(email string, password string) error {
 
 	return nil
 }
+func GetApplicationsByDepartment(department string) ([]studentModel.Application, error) {
+	applicationDetails := database.MongoDB.Collection("applicationDetails")
 
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{"department": department}
+	cursor, err := applicationDetails.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var applications []studentModel.Application
+	for cursor.Next(ctx) {
+		var app studentModel.Application
+		if err := cursor.Decode(&app); err != nil {
+			return nil, err
+		}
+		applications = append(applications, app)
+	}
+	return applications, cursor.Err()
+}
 func UpdateApplicationinDB(application *studentModel.Application) error {
 	applicationDetails := database.MongoDB.Collection("applicationDetails")
 

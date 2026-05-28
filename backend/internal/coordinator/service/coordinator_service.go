@@ -125,3 +125,29 @@ func UpdateAllApplication(c *fiber.Ctx) error {
 	// }
 	// return c.Status(200).JSON(fiber.Map{"Status": "Application successfully accepted/rejected."})
 }
+func GetApplicationsForCoordinator(c *fiber.Ctx) error {
+	var input struct {
+		Email string `json:"email"`
+	}
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Cannot parse JSON"})
+	}
+	if input.Email == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "Missing required field: email"})
+	}
+
+	coordinator, err := repository.GetCoordinatorDetailsByEmail(input.Email)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return c.Status(404).JSON(fiber.Map{"error": "Coordinator not found"})
+		}
+		return c.Status(500).JSON(fiber.Map{"error": "Error fetching coordinator details"})
+	}
+
+	applications, err := repository.GetApplicationsByDepartment(coordinator.Department)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(200).JSON(fiber.Map{"data": applications})
+}
