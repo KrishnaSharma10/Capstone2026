@@ -1,134 +1,313 @@
-.icmp_forget_background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url('bg.jpg') no-repeat center center fixed;
-  background-size: cover;
-  z-index: -1;
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ── Reset & base ── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-.icmp_forget_overlay {
-  background: rgba(0, 0, 0, 0.3);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
+/* ── Background ── */
+.icmp_fp_background {
+    position: fixed;
+    inset: 0;
+    background: url('bg.jpg') no-repeat center center / cover;
+    z-index: -2;
+    filter: saturate(0.6) brightness(0.55);
 }
 
-.icmp_forget_logo {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 80px;
+.icmp_fp_overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(160deg, rgba(0, 30, 40, 0.55) 0%, rgba(0, 10, 20, 0.70) 100%);
+    z-index: -1;
 }
 
+/* ── Full-screen centering ── */
+.icmp_fp_container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px 16px;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Card ── */
+.icmp_fp_form_box {
+    background: #f0f2f4;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 440px;
+    padding: 40px 36px 32px;
+    border-top: 5px solid #b91c1c;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    animation: fpCardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fpCardIn {
+    from {
+        opacity: 0;
+        transform: translateY(28px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ── Branding ── */
+.icmp_fp_brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 10px;
+}
+
+.icmp_fp_icon {
+    width: 52px;
+    height: 52px;
+    background: #b91c1c;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(185, 28, 28, 0.4);
+}
+
+.icmp_fp_icon svg {
+    width: 26px;
+    height: 26px;
+    stroke: white;
+}
+
+.icmp_fp_brand h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: 0.03em;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.icmp_fp_brand p {
+    font-size: 12.5px;
+    color: #6b7280;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+/* ── Divider with label ── */
+.icmp_fp_divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.icmp_fp_divider::before,
+.icmp_fp_divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #d1d5db;
+}
+
+.icmp_fp_divider span {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #374151;
+    white-space: nowrap;
+}
+
+/* ── Hint text ── */
+.icmp_fp_hint {
+    font-size: 13.5px;
+    color: #6b7280;
+    line-height: 1.55;
+    margin-bottom: 22px;
+    text-align: center;
+}
+
+/* ── Section label ── */
+.icmp_fp_section_label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+/* ── Field group ── */
+.icmp_fp_field_group {
+    margin-bottom: 18px;
+}
+
+/* ── Input ── */
+.icmp_fp_form_box input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 9px;
+    background: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #111;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    outline: none;
+}
+
+.icmp_fp_form_box input::placeholder {
+    color: #9ca3af;
+}
+
+.icmp_fp_form_box input:focus {
+    border-color: #b91c1c;
+    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+}
+
+/* ── Submit button ── */
+.icmp_fp_submit_btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 4px;
+    border: none;
+    border-radius: 10px;
+    background: #b91c1c;
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+    box-shadow: 0 4px 18px rgba(185, 28, 28, 0.35);
+}
+
+.icmp_fp_submit_btn:hover {
+    background: #991b1b;
+    box-shadow: 0 6px 24px rgba(185, 28, 28, 0.45);
+    transform: translateY(-1px);
+}
+
+.icmp_fp_submit_btn:active {
+    transform: translateY(0);
+}
+
+.icmp_fp_submit_btn svg {
+    width: 17px;
+    height: 17px;
+    stroke: white;
+    transition: transform 0.18s;
+}
+
+.icmp_fp_submit_btn:hover svg {
+    transform: translateX(3px);
+}
+
+/* ── Success state ── */
+.icmp_fp_success_box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 24px 16px;
+    background: #fff5f5;
+    border: 1.5px solid rgba(185, 28, 28, 0.18);
+    border-radius: 12px;
+    margin-bottom: 6px;
+    animation: fpCardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.icmp_fp_success_icon {
+    width: 48px;
+    height: 48px;
+    background: #b91c1c;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(185, 28, 28, 0.35);
+}
+
+.icmp_fp_success_icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: white;
+}
+
+.icmp_fp_success_title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.icmp_fp_success_text {
+    font-size: 13px;
+    color: #6b7280;
+    text-align: center;
+    line-height: 1.55;
+}
+
+/* ── Footer ── */
+.icmp_fp_footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.icmp_fp_back_link {
+    color: #b91c1c;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.icmp_fp_back_link:hover {
+    opacity: 0.75;
+    text-decoration: underline;
+}
+
+.icmp_fp_back_link svg {
+    width: 13px;
+    height: 13px;
+    stroke: #b91c1c;
+}
+
+/* ── Logo ── */
+.icmp_fp_logo {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    width: 72px;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+    z-index: 10;
+}
+
+/* ── Responsive ── */
 @media (max-width: 480px) {
-  .icmp_forget_logo {
-    position: static;
-    display: block;
-    margin: 20px auto;
-  }
-}
+    .icmp_fp_form_box {
+        padding: 32px 22px 28px;
+    }
 
-.icmp_forget_container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
-
-.icmp_forget_title {
-  color: white;
-  font-size: 32px;
-  font-weight: bold;
-  text-shadow: 2px 2px 4px #000;
-  margin: 50px 0 20px 0;
-  text-align: center;
-}
-
-.icmp_forget_form_box {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 30px 25px;
-  width: 320px;
-  color: white;
-  text-align: left;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-}
-
-.icmp_forget_form_box h2 {
-  text-align: center;
-  margin-bottom: 10px;
-  font-size: 24px;
-}
-
-.icmp_forget_form_box h3 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 18px;
-  font-weight: normal;
-}
-
-.icmp_forget_form_box label {
-  font-weight: bold;
-  display: block;
-  margin-top: 10px;
-}
-
-.icmp_forget_form_box input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border: none;
-  border-radius: 6px;
-}
-
-.icmp_forget_form_box a {
-  color: white;
-  font-size: 12px;
-  text-decoration: underline;
-  display: block;
-  margin-top: 10px;
-  text-align: center;
-  cursor: pointer;
-}
-
-.icmp_forget_form_box button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 15px;
-  border: none;
-  border-radius: 6px;
-  background-color: #d9534f;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.icmp_forget_form_box p {
-  text-align: center;
-  font-size: 12px;
-  margin-top: 10px;
-}
-
-.icmp_forget_form_box p a {
-  color: #fff;
-  text-decoration: underline;
-}
-
-@media (max-width: 480px) {
-  .icmp_forget_form_box {
-    width: 90%;
-  }
-
-  .icmp_forget_title {
-    font-size: 24px;
-  }
+    .icmp_fp_logo {
+        display: none;
+    }
 }
