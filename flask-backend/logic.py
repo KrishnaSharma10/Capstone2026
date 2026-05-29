@@ -499,6 +499,40 @@ def build_occupied(
 
     return occupied
 
+
+# ---------------------------------------------------------------------------
+# Build lecture-only occupied set for a subgroup
+# ---------------------------------------------------------------------------
+
+def build_lecture_occupied(batch: str, subgroups: Dict[str, Any]) -> Set[str]:
+    """
+    Returns only the lecture slots for a given subgroup.
+    Used to check if a lecture clash is lec-vs-lec only.
+    """
+    sg_data = subgroups.get(batch, {})
+    lecture_slots: Set[str] = set()
+    for slots in sg_data.get("lecture", {}).values():
+        lecture_slots.update(slots)
+    return lecture_slots
+
+
+# ---------------------------------------------------------------------------
+# Build full occupied set for a subgroup (all cats)
+# ---------------------------------------------------------------------------
+
+def build_full_occupied(sg: str, subgroups: Dict[str, Any]) -> Set[str]:
+    """
+    Returns ALL slots (lecture + lab + tutorial) for a given subgroup.
+    Used to check lab/tut subgroup conflicts.
+    """
+    sg_data = subgroups.get(sg, {})
+    all_slots: Set[str] = set()
+    for cat in ("lecture", "lab", "tutorial","elective"):
+        for slots in sg_data.get(cat, {}).values():
+            all_slots.update(slots)
+    return all_slots
+
+
 # ---------------------------------------------------------------------------
 # Subject slot helpers
 # ---------------------------------------------------------------------------
@@ -538,12 +572,16 @@ def find_combinations(
     base_occupied: Set[str],
     subgroups: Dict[str, Any],
     courses: Dict[str, Any],
+    student_batch: str = "",          # ← NEW: student's own subgroup name
     allow_clash: bool = False,
     max_results: int = 5,
     existing_results: int = 0,
 ) -> List[Dict]:
     results = []
     needed = max_results - existing_results
+
+    # Pre-build student's lecture-only slots for lec-vs-lec clash validation
+    student_lec_slots = build_lecture_occupied(student_batch, subgroups) if student_batch else base_occupied
 
     subject_components = {}
     for subj in subjects:
@@ -587,7 +625,7 @@ def find_combinations(
 
             all_new_slots = lec_slots | lab_slots | tut_slots
 
-            # --- hard reject: intra-subject component overlaps ---
+            # ── RULE 1: intra-subject component overlaps → hard reject ──────
             if not lab_slots.isdisjoint(lec_slots):
                 continue
             if not tut_slots.isdisjoint(lec_slots):
@@ -595,23 +633,40 @@ def find_combinations(
             if not lab_slots.isdisjoint(tut_slots):
                 continue
 
-            # --- hard reject: ANY new slot overlaps with other added subjects' slots ---
+            # ── RULE 2: inter-subject overlap (already added subjects) → hard reject ──
             inter_subject_occupied = occupied - base_occ
             if not all_new_slots.isdisjoint(inter_subject_occupied):
                 continue
 
-            # --- hard reject: lab/tutorial overlaps with base timetable ---
-            non_lec_slots = lab_slots | tut_slots
-            if not non_lec_slots.isdisjoint(base_occ):
-                continue
+            # ── RULE 3: lab slots must not clash with ANYTHING ───────────────
+            # Check against: student base + lab subgroup's full timetable
+            if lab_slots:
+                lab_sg_full = build_full_occupied(lab_sg, subgroups) - lab_slots if lab_sg else set()
+                lab_forbidden = base_occ | lab_sg_full
+                if not lab_slots.isdisjoint(lab_forbidden):
+                    continue
 
-            # --- lecture clash check against base timetable only ---
-            lec_clash = lec_slots & base_occ
+            # ── RULE 4: tutorial slots must not clash with ANYTHING ──────────
+            # Check against: student base + tutorial subgroup's full timetable
+            if tut_slots:
+                tut_sg_full = build_full_occupied(tut_sg, subgroups) - tut_slots if tut_sg else set()
+                tut_forbidden = base_occ | tut_sg_full
+                if not tut_slots.isdisjoint(tut_forbidden):
+                    continue
+
+            # ── RULE 5: lecture clash — only allowed if it's lec-vs-lec ─────
+            # Max 1 lecture clash per subject, and ONLY against student's lecture slots
+            # (not against lab/tutorial slots of the base timetable)
+            lec_clash = lec_slots & student_lec_slots   # lec vs lec only
+            non_lec_base = base_occ - student_lec_slots  # lab+tut slots of base
+            if not lec_slots.isdisjoint(non_lec_base):
+                # Lecture of improvement subject hits a lab/tut of base → hard reject
+                continue
             if len(lec_clash) > 1:
+                # More than 1 lecture slot of THIS subject clashes → hard reject
                 continue
 
             this_subject_clashes = len(lec_clash) == 1
-
             if this_subject_clashes and not allow_clash:
                 continue
 
@@ -650,16 +705,11 @@ def validate_slot_counts(
     result: List[Dict],
     course_ltp: Dict[str, int],
 ) -> bool:
-    """
-    Returns True if every subject in the result has exactly the expected
-    number of slots (L + T + P) as provided by course_ltp.
-    Returns True if course_ltp is empty (no validation requested).
-    """
     for entry in result:
         subj = entry["subject"]
         expected = course_ltp.get(subj)
         if expected is None:
-            continue  # no LTP data for this subject, skip
+            continue
         actual = (
             len(entry["lecture_slots"]) +
             len(entry["lab_slots"])     +
@@ -780,7 +830,6 @@ class SlotFinder:
         if not subjects:
             return [], []
 
-        # Debug: show available subgroups per subject
         for subj in subjects:
             lec, lab, tut = pre_group_subgroups(subj, self.subgroups, self.courses)
             print(f"{subj}: lec_sgs={lec}, lab_sgs={lab}, tut_sgs={tut}")
@@ -791,6 +840,7 @@ class SlotFinder:
             base_occupied,
             self.subgroups,
             self.courses,
+            student_batch=batch,          # ← pass batch so lec-vs-lec check works
             allow_clash=False,
             max_results=50,
         )
@@ -802,6 +852,7 @@ class SlotFinder:
                 base_occupied,
                 self.subgroups,
                 self.courses,
+                student_batch=batch,      # ← pass batch here too
                 allow_clash=True,
                 max_results=50,
                 existing_results=len(pool),
@@ -809,7 +860,6 @@ class SlotFinder:
 
         print(f"Pool size before diversity filter: {len(pool)}")
 
-        # Diversity filter
         def fp_lecture(result):
             return frozenset((e["subject"], e["lecture_sg"]) for e in result)
 
@@ -851,7 +901,6 @@ class SlotFinder:
 
         merged = lec_diverse + lab_diverse + tut_diverse + tut_remaining
 
-        # Slot fingerprint dedup — remove visually identical timetables
         seen_slots = set()
         truly_distinct = []
         for result in merged:
@@ -860,7 +909,6 @@ class SlotFinder:
                 seen_slots.add(fp)
                 truly_distinct.append(result)
 
-        # LTP validation — filter out results with incomplete slot counts
         if course_ltp:
             print("Running LTP slot count validation...")
             ltp_valid = [r for r in truly_distinct if validate_slot_counts(r, course_ltp)]
@@ -872,7 +920,6 @@ class SlotFinder:
 
         print(f"Final options after slot dedup: {len(final)}")
 
-        # Debug: print slot breakdown per option
         for i, result in enumerate(final):
             for entry in result:
                 print(f"Option {i+1} | {entry['subject']} | "
