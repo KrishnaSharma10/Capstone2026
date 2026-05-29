@@ -48,28 +48,31 @@ type TimeTableEntry struct {
 }
 
 type Application struct {
-	ApplicationId    string           `json:"application_id" bson:"application_id"`
-	Email            string           `json:"email" bson:"email"`
-	RollNo           string           `json:"roll_no" bson:"roll_no"`
-	Name             string           `json:"name" bson:"name"`
-	Branch           string           `json:"branch" bson:"branch"`
-	AcademicYear     string           `json:"year" bson:"year"`
-	PhoneNumber      string           `json:"phone_number" bson:"phone_number"`
-	Department       string           `json:"department" bson:"department"`
-	Subgroup         string           `json:"subgroup" bson:"subgroup"`
-	ElectiveBasket   string           `json:"elective_basket" bson:"elective_basket"`
-	GeneralElective  string           `json:"general_elective" bson:"general_elective"`
-	OptedCourses     [][]string       `json:"opted_courses" bson:"opted_courses"`
-	Clashing         bool             `json:"clashing" bson:"clashing"`
-	Comments         []string         `json:"comments" bson:"comments"`
-	Message          string           `json:"message" bson:"message"`
-	Stage            int              `json:"stage" bson:"stage"`
-	URL              string           `json:"url" bson:"url"`
-	FeeReceiptLink   string           `json:"fee_receipt_link" bson:"fee_receipt_link"`
-	NewTimeTable     []TimeTableEntry `json:"new_time_table" bson:"new_time_table"`
-	CurrentTimeTable []TimeTableEntry `json:"current_time_table" bson:"current_time_table"` // ← ADD
-	ElectiveData     []string         `json:"elective_data" bson:"elective_data"`
-	CGPA             string           `json:"cgpa" bson:"cgpa"`
+	ApplicationId           string           `json:"application_id" bson:"application_id"`
+	Email                   string           `json:"email" bson:"email"`
+	RollNo                  string           `json:"roll_no" bson:"roll_no"`
+	Name                    string           `json:"name" bson:"name"`
+	Branch                  string           `json:"branch" bson:"branch"`
+	AcademicYear            string           `json:"year" bson:"year"`
+	PhoneNumber             string           `json:"phone_number" bson:"phone_number"`
+	Department              string           `json:"department" bson:"department"`
+	Subgroup                string           `json:"subgroup" bson:"subgroup"`
+	ElectiveBasket          string           `json:"elective_basket" bson:"elective_basket"`
+	GeneralElective         string           `json:"general_elective" bson:"general_elective"`
+	OptedCourses            [][]string       `json:"opted_courses" bson:"opted_courses"`
+	Clashing                bool             `json:"clashing" bson:"clashing"`
+	Comments                []string         `json:"comments" bson:"comments"`
+	Message                 string           `json:"message" bson:"message"`
+	Stage                   int              `json:"stage" bson:"stage"`
+	URL                     string           `json:"url" bson:"url"`
+	FeeReceiptLink          string           `json:"fee_receipt_link" bson:"fee_receipt_link"`
+	NewTimeTable            []TimeTableEntry `json:"new_time_table" bson:"new_time_table"`
+	CurrentTimeTable        []TimeTableEntry `json:"current_time_table" bson:"current_time_table"` // ← ADD
+	ElectiveData            []string         `json:"elective_data" bson:"elective_data"`
+	CGPA                    string           `json:"cgpa" bson:"cgpa"`
+	ApprovedAtVersion       string           `json:"approved_at_version,omitempty" bson:"approved_at_version,omitempty"`
+	TimetableVersionFlagged string           `json:"timetable_version_flagged,omitempty" bson:"timetable_version_flagged,omitempty"`
+	ClashSlots              []string         `json:"clash_slots,omitempty" bson:"clash_slots,omitempty"`
 }
 
 type ApplicationList struct {

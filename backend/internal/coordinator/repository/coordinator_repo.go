@@ -63,20 +63,35 @@ func UpdateApplicationinDB(application *studentModel.Application) error {
 
 	fmt.Println(application.ApplicationId)
 	filter := bson.M{"application_id": application.ApplicationId}
-	update := bson.M{"$set": bson.M{"stage": application.Stage, "comments": application.Comments}}
 
+	updateFields := bson.M{
+		"stage":    application.Stage,
+		"comments": application.Comments,
+	}
+
+	// ── When approving (stage → 5), stamp the current timetable version ──
+	if application.Stage == 5 {
+		metaCollection := database.MongoDB.Collection("metadata")
+		metaCtx, metaCancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer metaCancel()
+
+		var meta struct {
+			Version string `bson:"version"`
+		}
+		err := metaCollection.FindOne(metaCtx, bson.M{"_id": "timetable_version"}).Decode(&meta)
+		if err == nil && meta.Version != "" {
+			updateFields["approved_at_version"] = meta.Version
+		} else {
+			// Fallback: use current timestamp if metadata not yet populated
+			updateFields["approved_at_version"] = time.Now().UTC().Format("20060102150405")
+		}
+	}
+
+	update := bson.M{"$set": updateFields}
 	_, err := applicationDetails.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return fmt.Errorf("failed to update application: %w", err)
 	}
-
-	// if result.MatchedCount == 0 {
-	// 	fmt.Println("No matching document found for update.")
-	// } else if result.ModifiedCount == 0 {
-	// 	fmt.Println("Document matched but stage was not updated (possibly same value).")
-	// } else {
-	// 	fmt.Println("Update successful.")
-	// }
 
 	return nil
 }

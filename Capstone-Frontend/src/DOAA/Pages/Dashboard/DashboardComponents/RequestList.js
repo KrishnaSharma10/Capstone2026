@@ -107,6 +107,26 @@ const PendingTable = ({ data, requestType, department }) => {
                         {selectedDetailsRow?.opted_courses.map((val, ind) => {
                             return <h4>- {val[0]} opted with {val[1]}</h4>
                         })}
+
+{/* Warning banner for stage 6 / flagged applications */}
+{selectedDetailsRow?.timetable_version_flagged && (
+    <div style={{
+        background: '#FFF3CD',
+        border: '1px solid #FFC107',
+        borderRadius: '8px',
+        padding: '10px 16px',
+        margin: '12px 0',
+        color: '#856404',
+        fontWeight: 500,
+    }}>
+        ⚠️ Timetable updated after approval — new clashes may exist.
+        {selectedDetailsRow?.clash_slots?.length > 0 && (
+            <div style={{ marginTop: '6px', fontSize: '0.85em' }}>
+                Clashing slots: {selectedDetailsRow.clash_slots.join(', ')}
+            </div>
+        )}
+    </div>
+)}
                         <div className="doaa-timetable-toggle">
     <button
         className={`toggle-btn ${activeTab === 'current' ? 'active' : ''}`}
