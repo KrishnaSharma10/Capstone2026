@@ -46,6 +46,7 @@ func SetupRoutes() *fiber.App {
 	hod.Post("/update-password", hodHandler.UpdateHodPassword)
 	hod.Get("/all-coordinators-details", authHandler.JWTMiddleware, hodHandler.GetAllCoordinatorsDetails)
 	hod.Post("/delete-coordinator", authHandler.JWTMiddleware, hodHandler.DeleteCoordinator)
+	hod.Get("/get-applicationsforhod", authHandler.JWTMiddleware, hodHandler.GetApplicationsForHod)
 
 	//coordinator routes
 	coordinator := api.Group("/coordinator")

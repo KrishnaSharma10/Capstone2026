@@ -176,3 +176,24 @@ func DeleteCoordinator(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{"Status": "Coordinator successfully deleted"})
 }
+func GetApplicationsForHod(c *fiber.Ctx) error {
+	// Extract HOD email from JWT
+	hodEmail, ok := c.Locals("email").(string)
+	if !ok || hodEmail == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	// Look up HOD to get their department
+	hod, err := repository.GetHodDetailsByEmail(hodEmail)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "HOD not found"})
+	}
+
+	// Fetch only applications belonging to HOD's department
+	applications, err := repository.GetApplicationsByDepartment(hod.Department)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": applications})
+}

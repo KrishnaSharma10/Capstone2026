@@ -184,3 +184,21 @@ func DeleteCoordinatorInDBByDepartment(email string, department string) error {
 
 	return nil
 }
+func GetApplicationsByDepartment(department string) ([]bson.M, error) {
+	applicationDetails := database.MongoDB.Collection("applicationDetails")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := applicationDetails.Find(ctx, bson.M{"department": department})
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch applications: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	var applications []bson.M
+	if err := cursor.All(ctx, &applications); err != nil {
+		return nil, fmt.Errorf("failed to decode applications: %v", err)
+	}
+
+	return applications, nil
+}

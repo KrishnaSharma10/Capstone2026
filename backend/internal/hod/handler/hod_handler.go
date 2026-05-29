@@ -28,3 +28,6 @@ func GetAllCoordinatorsDetails(c *fiber.Ctx) error {
 func DeleteCoordinator(c *fiber.Ctx) error {
 	return service.DeleteCoordinator(c)
 }
+func GetApplicationsForHod(c *fiber.Ctx) error {
+	return service.GetApplicationsForHod(c)
+}

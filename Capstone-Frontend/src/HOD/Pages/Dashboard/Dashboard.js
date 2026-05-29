@@ -65,7 +65,12 @@ const Dashboard = () => {
   useEffect(() =>{
           const fetchApplications = async () =>{
               try {
-                  const response = await fetch('http://127.0.0.1:5000/api/get-all-applications');
+                  const response = await fetch('http://127.0.0.1:5000/api/hod/get-applicationsforhod', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${localStorage.getItem('ICMPTokenHod')}`
+  }
+});
                   const data = await response.json();
                   console.log(data.data);
                   setAllApplications(data.data);
