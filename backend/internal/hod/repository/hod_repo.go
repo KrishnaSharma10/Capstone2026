@@ -130,3 +130,57 @@ func DeleteCoordinatorInDB(email string) error {
 
 	return nil
 }
+func GetCoordinatorsByDepartment(department string) ([]model.Coordinator, error) {
+	coordinatorDetails := database.MongoDB.Collection("coordinatorDetails")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := coordinatorDetails.Find(ctx, bson.M{"department": department})
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch coordinators: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	var coordinators []model.Coordinator
+	for cursor.Next(ctx) {
+		var coordinator model.Coordinator
+		if err := cursor.Decode(&coordinator); err != nil {
+			return nil, fmt.Errorf("failed to decode coordinator: %v", err)
+		}
+		coordinators = append(coordinators, coordinator)
+	}
+
+	return coordinators, nil
+}
+
+func GetCoordinatorDepartment(email string) (string, error) {
+	coordinatorDetails := database.MongoDB.Collection("coordinatorDetails")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var coordinator model.Coordinator
+	err := coordinatorDetails.FindOne(ctx, bson.M{"email": email}).Decode(&coordinator)
+	if err != nil {
+		return "", fmt.Errorf("coordinator not found: %v", err)
+	}
+
+	return coordinator.Department, nil
+}
+
+func DeleteCoordinatorInDBByDepartment(email string, department string) error {
+	coordinatorDetails := database.MongoDB.Collection("coordinatorDetails")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{"email": email, "department": department}
+	result, err := coordinatorDetails.DeleteOne(ctx, filter)
+	if err != nil {
+		return fmt.Errorf("failed to delete coordinator: %v", err)
+	}
+
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("no coordinator found with email %s in your department", email)
+	}
+
+	return nil
+}

@@ -52,23 +52,34 @@ func LoginHod(c *fiber.Ctx) error {
 }
 
 func CreateCoordinator(c *fiber.Ctx) error {
-	input := new(model.Coordinator)
+	// Extract HOD email from JWT
+	hodEmail, ok := c.Locals("email").(string)
+	if !ok || hodEmail == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
 
+	hod, err := repository.GetHodDetailsByEmail(hodEmail)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "HOD not found"})
+	}
+
+	input := new(model.Coordinator)
 	if err := c.BodyParser(input); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON for Coordinator creation"})
 	}
-	//check if email exist
 
-	//add tenure details and password encryption
+	// Force department to HOD's own department, ignore whatever frontend sends
+	input.Department = hod.Department
+
 	hash, _ := bcrypt.GenerateFromPassword([]byte(input.Password), 10)
 	input.Password = string(hash)
 	input.TenureStart = time.Now().Format("2006-01-02")
 	input.TenureEnd = "present"
 
-	err := repository.CreateCoordinatorDB(input)
-	if err != nil {
+	if err := repository.CreateCoordinatorDB(input); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot create coordinator account"})
 	}
+
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"Status": "Coordinator account created successfully"})
 }
 
@@ -115,25 +126,53 @@ func UpdateHodPassword(c *fiber.Ctx) error {
 }
 
 func GetAllCoordinatorsDetails(c *fiber.Ctx) error {
-	allCoordinators, err := repository.AllCoordinatorsInDB()
-
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"Error": err})
+	// Extract HOD email from JWT
+	hodEmail, ok := c.Locals("email").(string)
+	if !ok || hodEmail == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
-	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{"data": allCoordinators})
+
+	hod, err := repository.GetHodDetailsByEmail(hodEmail)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "HOD not found"})
+	}
+
+	coordinators, err := repository.GetCoordinatorsByDepartment(hod.Department)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{"data": coordinators})
 }
 
 func DeleteCoordinator(c *fiber.Ctx) error {
-	input := new(model.Coordinator)
+	// Extract HOD email from JWT
+	hodEmail, ok := c.Locals("email").(string)
+	if !ok || hodEmail == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
 
+	hod, err := repository.GetHodDetailsByEmail(hodEmail)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "HOD not found"})
+	}
+	input := new(model.Coordinator)
 	if err := c.BodyParser(input); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON for Coordinator deletion"})
 	}
-
-	err := repository.DeleteCoordinatorInDB(input.Email)
+	// Verify the coordinator belongs to HOD's department before deleting
+	coordinatorDept, err := repository.GetCoordinatorDepartment(input.Email)
 	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Coordinator not found"})
+	}
+
+	if coordinatorDept != hod.Department {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "You can only remove coordinators from your own department"})
+	}
+
+	if err := repository.DeleteCoordinatorInDBByDepartment(input.Email, hod.Department); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{"Status": "Coordinator successfulle deleted"})
+	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{"Status": "Coordinator successfully deleted"})
 }

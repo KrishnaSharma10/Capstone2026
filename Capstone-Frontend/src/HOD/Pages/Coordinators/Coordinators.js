@@ -18,14 +18,18 @@ const Coordinators = () => {
     password: '',
   });
 
+const token = localStorage.getItem('ICMPTokenHod');
   useEffect(() => {
     const fetchCoordinators = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5000/api/hod/all-coordinators-details');
+        const response = await fetch('http://127.0.0.1:5000/api/hod/all-coordinators-details', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const data = await response.json();
         console.log(data);
-        setCoordinators(data.data);
-        
+        setCoordinators(data.data || []);
       } catch (error) {
         console.error('Error fetching coordinator data:', error);
       }
@@ -35,7 +39,6 @@ const Coordinators = () => {
   }, []);
 
   const handleAddFaculty = async () => {
-
     if (!newFaculty.name || !newFaculty.email || !newFaculty.designation || !newFaculty.password) return;
 
     const newEntry = {
@@ -54,29 +57,32 @@ const Coordinators = () => {
         password: newFaculty.password,
         designation: newFaculty.designation,
         department: hod.hod_department,
-        email: newFaculty.email
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-    } catch (error) {
-      toast.error("Some error occured");
-    }
 
-    setCoordinators([...coordinators, newEntry]);
-    setNewFaculty({ name: '', email: '', designation: '', password: '' });
-    setShowPopup(false);
+      setCoordinators([...coordinators, newEntry]);
+      setNewFaculty({ name: '', email: '', designation: '', password: '' });
+      setShowPopup(false);
+      toast.success("Coordinator added successfully!");
+    } catch (error) {
+      toast.error("Some error occurred");
+    }
   };
 
   const handleRemoveFaculty = async (index, email) => {
     try {
       await axios.post("http://127.0.0.1:5000/api/hod/delete-coordinator", {
         email: email
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       const updatedCoordinators = coordinators.filter((_, i) => i !== index);
       setCoordinators(updatedCoordinators);
       toast.success("Deleted successfully!!!");
     } catch (error) {
-      toast.error("Some error occured!!");
+      toast.error("Some error occurred!!");
     }
-    
   };
 
   return (
@@ -154,5 +160,4 @@ const Coordinators = () => {
     </div>
   );
 };
-
 export default Coordinators;
