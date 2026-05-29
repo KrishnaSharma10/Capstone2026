@@ -36,7 +36,7 @@ const Dashboard = () => {
         const approved = [];
         const rejected = [];
 
-        data.data.forEach((app) => {
+       (data.data || []).forEach((app) => {
           switch (app.stage) {
             case 2:
             case 4:
