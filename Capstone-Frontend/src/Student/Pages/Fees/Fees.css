@@ -1,106 +1,419 @@
-.student-main-fees{
-  margin: 0;
-  margin-left: 250px;
-  padding: 30px;
-  background-color: #1b1a1a;
+/* ── Page shell ───────────────────────────────────────────────────── */
+
+.fees-page {
+  display: flex;
+  background: #f6f6f6;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  color: whitesmoke;
 }
 
-.student-main-fees h1{
-  font-weight: bold;
-}
-
-.student-main-fees-top-row{
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.student-main-fees-top-row h1{
-  font-weight: 600;
-  color: whitesmoke;
-}
-
-.student-main-fees-top, .student-main-fees-middle, .student-main-fees-bottom{
-  background-color: #2c3e50;
-  padding: 20px;
-  border: 1px ridge gray;
-  border-radius: 10px;
-  color: antiquewhite;
-}
-
-.student-main-fees-middle{
-  display: flex;
-  flex-direction: row;
-  overflow: none;
-  width: 100%;
-}
-.student-main-fees-middle-left, .student-main-fees-middle-right{
+.fees-main {
   flex: 1;
+  margin-left: 260px;
+  padding: 40px 36px 60px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+
+.fees-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #d60000;
+  margin: 0 0 8px;
+}
+
+.fees-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 12px;
+}
+
+.fees-subtitle {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.7;
+  margin: 0 0 8px;
+  max-width: 680px;
+}
+
+/* ── Generic card ─────────────────────────────────────────────────── */
+
+.fees-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 22px 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border-left: 3px solid #d60000;
+}
+
+.fees-card__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #d60000;
+  margin: 0 0 8px;
+}
+
+.fees-card__app-id {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+
+/* ── Fee breakdown table ──────────────────────────────────────────── */
+
+.fees-table {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  margin-top: 4px;
+}
+
+.fees-table__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #444;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+}
+
+.fees-table__row:last-child {
+  border-bottom: none;
+}
+
+.fees-table__row--header {
+  background: #f8f8f8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #999;
+}
+
+.fees-table__row--total {
+  background: #fff7f7;
+  font-weight: 700;
+  color: #1a1a1a;
+  font-size: 14px;
+  border-top: 2px solid #f0c2c2;
+}
+
+/* ── Amount due pill ──────────────────────────────────────────────── */
+
+.fees-amount-due {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #d60000;
+  color: #fff;
+  border-radius: 8px;
+  padding: 16px 24px;
+}
+
+.fees-amount-due__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.fees-amount-due__value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* ── Payment methods ──────────────────────────────────────────────── */
+
+.fees-payment-methods {
+  display: flex;
+  gap: 0;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.fees-payment-method {
+  flex: 1;
+  min-width: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-.student-main-fees-middle-img{
-  aspect-ratio: 1;
-  max-width: 200px;
-  width: 100%;
-  margin-top: 5px;
+  gap: 12px;
+  padding: 20px 12px;
 }
 
+.fees-payment-divider {
+  width: 1px;
+  background: #eee;
+  margin: 16px 0;
+  align-self: stretch;
+}
 
-.student-main-fees-bottom{
+.fees-payment-method__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  text-align: center;
+}
+
+.fees-qr-wrap {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 8px;
+  background: #fafafa;
+}
+
+.fees-qr-img {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  display: block;
+}
+
+.fees-link-btn {
+  display: inline-block;
+  background: #f4f4f4;
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: 1px solid #e4e4e4;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.fees-link-btn:hover {
+  background: #ffe5e5;
+  border-color: #f0c2c2;
+  color: #c0392b;
+}
+
+/* ── Upload form ──────────────────────────────────────────────────── */
+
+.fees-upload__hint {
+  font-size: 12px;
+  color: #999;
+  margin: 0 0 16px;
+}
+
+.fees-upload-form {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.student-main-fees-bottom-submit-btn{
-  padding: 5px 10px;
-  outline: none;
-  border: 1px solid black;
-  border-radius: 10px;
+/* Hide the native file input, show a styled label */
+.fees-file-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+.fees-file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
-  transition: 0.4s;
-}
-.student-main-fees-bottom-submit-btn:hover{
-  background-color: black;
-  color: white;
-}
-
-
-.fees-breakdown-table{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 60px;
-  border: 1px solid #ccc;
-  width: 80%;
-  margin: 20px auto;
-  box-shadow: 3px 3px 5px rgba(0,0,0, 0.5);
-  border-radius: 15px;
+  background: #f4f4f4;
+  border: 1px solid #e4e4e4;
+  border-radius: 6px;
+  padding: 9px 16px;
+  font-size: 13px;
+  color: #555;
+  transition: background 0.15s, border-color 0.15s;
+  max-width: 320px;
   overflow: hidden;
 }
 
-.fees-breakdown-table *{
-  margin: 0;
-  padding: 0;
+.fees-file-label:hover {
+  background: #eaeaea;
+  border-color: #ccc;
 }
 
-.fees-breakdown-table-cell {
-  border: 1px solid #ccc;
+.fees-file-label__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fees-submit-btn {
+  background: #d60000;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.fees-submit-btn:hover {
+  background: #b30000;
+  transform: translateY(-1px);
+}
+
+.fees-upload-status {
+  font-size: 13px;
+  margin: 10px 0 0;
+  padding: 8px 14px;
+  border-radius: 6px;
+}
+
+.fees-upload-status--ok {
+  background: #e9faf0;
+  color: #1a7a42;
+  border: 1px solid #b2e5c8;
+}
+
+.fees-upload-status--err {
+  background: #ffeaea;
+  color: #c0392b;
+  border: 1px solid #f0c2c2;
+}
+
+.fees-uploaded-url {
+  font-size: 12px;
+  color: #666;
+  margin: 8px 0 0;
+  word-break: break-all;
+}
+
+.fees-uploaded-url a {
+  color: #d60000;
+  text-decoration: underline;
+}
+
+/* ── Info banners (waiting / success) ────────────────────────────── */
+
+.fees-info-banner {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  color: whitesmoke;
+  align-items: flex-start;
+  gap: 14px;
+  border-radius: 8px;
+  padding: 18px 22px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
-.you-have-to-pay-h{
-  color: aliceblue;
+.fees-info-banner--waiting {
+  background: #fffbea;
+  border-left: 3px solid #e6a817;
+}
+
+.fees-info-banner--success {
+  background: #e9faf0;
+  border-left: 3px solid #1a7a42;
+}
+
+.fees-info-banner__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.fees-info-banner__heading {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 4px;
+}
+
+.fees-info-banner__text {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Empty state ──────────────────────────────────────────────────── */
+
+.fees-empty {
+  background: #fff;
+  border-radius: 8px;
+  padding: 56px 24px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.fees-empty__icon {
+  display: block;
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.fees-empty__text {
+  font-size: 14px;
+  color: #888;
+  margin: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .fees-main {
+    margin-left: 0;
+    padding: 72px 16px 48px;
+  }
+
+  .fees-payment-divider {
+    width: 100%;
+    height: 1px;
+    margin: 0 16px;
+  }
+
+  .fees-payment-methods {
+    flex-direction: column;
+  }
+
+  .fees-payment-method {
+    width: 100%;
+  }
+
+  .fees-amount-due {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fees-title {
+    font-size: 24px;
+  }
+
+  .fees-upload-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .fees-file-label,
+  .fees-submit-btn {
+    width: 100%;
+    justify-content: center;
+    max-width: none;
+    text-align: center;
+  }
+
+  .fees-table__row {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
 }

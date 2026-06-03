@@ -1,16 +1,225 @@
-.student-application-tile{
-    display: flex;
-    background-color: #2c3e50;
-    border-radius: 10px;
-    overflow: hidden;
-    flex-direction: column;
-    padding: 20px;
-    border: 1px solid gray;
+/* ── Tile shell ───────────────────────────────────────────────────── */
+
+.htile {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  border-left: 3px solid transparent;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  overflow: hidden;
 }
 
-.student-application-tile h2,
-.student-application-tile h4,
-.student-application-tile h3,
-.student-application-tile h5{
-    color: whitesmoke;
+.htile:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.htile--open {
+  border-left-color: #d60000;
+}
+
+/* ── Header (always visible, clickable) ───────────────────────────── */
+
+.htile__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.htile__header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.htile__id {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* ── Status badge ─────────────────────────────────────────────────── */
+
+.htile__badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.htile__badge--accepted {
+  background: #e9faf0;
+  color: #1a7a42;
+}
+
+.htile__badge--rejected {
+  background: #ffeaea;
+  color: #c0392b;
+}
+
+/* ── Toggle icon ──────────────────────────────────────────────────── */
+
+.htile__toggle {
+  font-size: 22px;
+  font-weight: 300;
+  color: #d60000;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.htile--open .htile__toggle {
+  transform: rotate(45deg);
+}
+
+/* ── Expanded body ────────────────────────────────────────────────── */
+
+.htile__body {
+  padding: 0 20px 20px;
+  animation: htileFadeIn 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+@keyframes htileFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Section ──────────────────────────────────────────────────────── */
+
+.htile__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+.htile__section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #d60000;
+  margin: 0;
+}
+
+/* ── Courses ──────────────────────────────────────────────────────── */
+
+.htile__courses {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.htile__course-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #444;
+}
+
+.htile__course-code {
+  font-weight: 600;
+  color: #1a1a1a;
+  background: #f4f4f4;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.htile__course-group {
+  color: #666;
+}
+
+/* ── Timetable wrapper ────────────────────────────────────────────── */
+
+.htile__timetable-wrap {
+  overflow-x: auto;
+  border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+/* ── Download links ───────────────────────────────────────────────── */
+
+.htile__links-row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.htile__link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f4f4f4;
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: 1px solid #e4e4e4;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.htile__link-btn:hover {
+  background: #ffe5e5;
+  border-color: #f0c2c2;
+  color: #c0392b;
+}
+
+/* ── Comments ─────────────────────────────────────────────────────── */
+
+.htile__comments {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.htile__comment {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+  padding-left: 14px;
+  position: relative;
+}
+
+.htile__comment::before {
+  content: '–';
+  position: absolute;
+  left: 0;
+  color: #d60000;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .htile__header {
+    padding: 14px 16px;
+  }
+
+  .htile__body {
+    padding: 0 16px 16px;
+  }
+
+  .htile__links-row {
+    flex-direction: column;
+  }
+
+  .htile__link-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
