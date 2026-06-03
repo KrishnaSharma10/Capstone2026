@@ -8,19 +8,15 @@ import Timetable from '../../Components/TimeTable';
 import Logout from '../../Components/Logout';
 import { useNavigate } from 'react-router-dom';
 
-// ─────────────────────────────────────────────
-// Scoring function: higher = better match
-// Exact match → starts with → word starts with → contains
-// ─────────────────────────────────────────────
 const scoreMatch = (course, query) => {
   const q = query.toLowerCase().trim();
   const name = course.data["course name"].toLowerCase();
   const code = course.subjectCode.toLowerCase();
 
-  if (name === q || code === q)                        return 4; // exact
-  if (name.startsWith(q) || code.startsWith(q))       return 3; // starts with
-  if (name.split(' ').some(w => w.startsWith(q)))     return 2; // word starts with
-  if (name.includes(q) || code.includes(q))           return 1; // contains
+  if (name === q || code === q)                        return 4;
+  if (name.startsWith(q) || code.startsWith(q))       return 3;
+  if (name.split(' ').some(w => w.startsWith(q)))     return 2;
+  if (name.includes(q) || code.includes(q))           return 1;
   return 0;
 };
 
@@ -31,12 +27,9 @@ const getFilteredCourses = (courseData, query) => {
     .filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score)
     .map(({ course }) => course)
-    .slice(0, 20); // max 10 results
+    .slice(0, 20);
 };
 
-// ─────────────────────────────────────────────
-// Reusable smart search dropdown component
-// ─────────────────────────────────────────────
 const CourseSearchDropdown = ({ courseData, onSelect, placeholder }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -44,7 +37,6 @@ const CourseSearchDropdown = ({ courseData, onSelect, placeholder }) => {
   const [highlighted, setHighlighted] = useState(-1);
   const wrapperRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
@@ -80,20 +72,18 @@ const CourseSearchDropdown = ({ courseData, onSelect, placeholder }) => {
     onSelect(course);
   };
 
-  // Highlight the matched part of the label
   const highlightMatch = (text, query) => {
     const idx = text.toLowerCase().indexOf(query.toLowerCase().trim());
     if (idx === -1 || !query.trim()) return text;
     return (
       <>
         {text.slice(0, idx)}
-        <strong style={{ color: '#fff' }}>{text.slice(idx, idx + query.trim().length)}</strong>
+        <strong style={{ color: '#c0392b' }}>{text.slice(idx, idx + query.trim().length)}</strong>
         {text.slice(idx + query.trim().length)}
       </>
     );
   };
 
-  // Keyboard navigation
   const handleKeyDown = (e) => {
     if (!open) return;
     if (e.key === 'ArrowDown') {
@@ -137,15 +127,14 @@ const CourseSearchDropdown = ({ courseData, onSelect, placeholder }) => {
           margin: 0,
           padding: 0,
           listStyle: 'none',
-          background: '#1e2a38',
-          border: '1px solid #3a4a5c',
-          borderRadius: '6px',
+          background: '#ffffff',
+          border: '1px solid #e2e0db',
+          borderRadius: '8px',
           maxHeight: '260px',
           overflowY: 'auto',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
         }}>
           {results.map((course, i) => {
-            const label = `${course.data["course name"]} (${course.subjectCode})`;
             const isHighlighted = i === highlighted;
             return (
               <li
@@ -156,20 +145,20 @@ const CourseSearchDropdown = ({ courseData, onSelect, placeholder }) => {
                   padding: '10px 14px',
                   cursor: 'pointer',
                   fontSize: '14px',
-                  color: '#cdd6e0',
-                  background: isHighlighted ? '#2c3e50' : 'transparent',
-                  borderBottom: '1px solid #2c3e50',
+                  color: '#1a1a1a',
+                  background: isHighlighted ? '#fdf3f2' : 'transparent',
+                  borderBottom: '1px solid #f0eeea',
                   transition: 'background 0.15s',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '2px',
                 }}
               >
-                <span style={{ fontWeight: 500 }}>
+                <span style={{ fontWeight: 500, color: '#1a1a1a' }}>
                   {highlightMatch(course.data["course name"], query)}
                 </span>
-                <span style={{ fontSize: '12px', color: '#7a9bb5' }}>
-                {course.subjectCode}
+                <span style={{ fontSize: '12px', color: '#9a9a9a' }}>
+                  {course.subjectCode}
                 </span>
               </li>
             );
@@ -180,14 +169,11 @@ const CourseSearchDropdown = ({ courseData, onSelect, placeholder }) => {
   );
 };
 
-// ─────────────────────────────────────────────
-// Main component
-// ─────────────────────────────────────────────
 const CourseImprovement = () => {
   const token = localStorage.getItem("ICMPTokenStudent");
   const { student, setStudent } = useContext(UserContext);
   const [courseData, setCourseData] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState(null); // single selected course object
+  const [selectedCourse, setSelectedCourse] = useState(null);
 
   const [choices, setChoices] = useState([]);
   const [newTimeTable, setNewTimeTable] = useState([]);
@@ -197,8 +183,6 @@ const CourseImprovement = () => {
   const [IEEFile, setIEEFile] = useState(null); // eslint-disable-line no-unused-vars
 
   const [active, setActive] = useState(true);
-
-  // Holds the list of courses the student has added (up to 3)
   const [selectedCourseData, setSelectedCourseData] = useState([]);
 
   const navigate = useNavigate();
@@ -232,7 +216,6 @@ const CourseImprovement = () => {
       });
   }, [student]);
 
-  // ── Add course to list ──
   const handleSubmit1 = (e) => {
     e.preventDefault();
 
@@ -362,8 +345,9 @@ const CourseImprovement = () => {
     <div>
       <StudentSidebar />
       <div className="student-main-course-improvement">
+
         <div className="student-main-dashboard-top-row">
-          <h1>Courses Improvement Section</h1>
+          <h1>Apply for Grade Enhancement</h1>
           <Logout />
         </div>
 
@@ -372,161 +356,155 @@ const CourseImprovement = () => {
               Please Wait for the Ongoing Application to be Accepted/Rejected
             </h1>
           : <>
+            <div className="ci-page-intro">
+              <div className="ci-page-intro-text">
+                <h2>Course Improvement</h2>
+                <p>Select courses from your previous semesters to improve your cumulative performance. Ensure all documentation is verified before submission.</p>
+              </div>
+              <div className="ci-status-badge">
+                <div className="ci-status-dot"></div>
+                <div>
+                  <span className="ci-status-label">Application Status</span>
+                  Eligibility Confirmed
+                </div>
+              </div>
+            </div>
+
             <div className="student-main-course-improvement-top2">
-              <h3>Guidelines:</h3>
-              <h5>- Generate options by clicking on "Generate options" button.</h5>
-              <h5>- Select one of the available options.</h5>
-              <h5>- Wait for the Ongoing Application to be Accepted/Rejected before making new request.</h5>
+              <p className="ci-guidelines-title">📋 Guidelines:</p>
+              <div className="ci-guidelines-steps">
+                <div className="ci-guideline-step">
+                  <div className="ci-step-number">1</div>
+                  <p className="ci-step-text">Generate options by clicking the <strong>Generate options</strong> button at the bottom of the page.</p>
+                </div>
+                <div className="ci-guideline-step">
+                  <div className="ci-step-number">2</div>
+                  <p className="ci-step-text">Carefully review and select one of the available academic enhancement options provided.</p>
+                </div>
+                <div className="ci-guideline-step">
+                  <div className="ci-step-number">3</div>
+                  <p className="ci-step-text">Wait for the Ongoing Application to be <strong>Accepted/Rejected</strong> before making a new request.</p>
+                </div>
+              </div>
             </div>
 
             <div className="student-main-course-improvement-bottom">
 
-              {/* ── LEFT: selected courses list ── */}
-              <div className="student-main-course-improvement-bottom-left">
-                <h5>Selected Courses for Improvement</h5>
-                <div className="student-main-course-improvement-bottom-left-t1">
-                  {selectedCourseData.map((course) => (
-                    <div className="student-main-course-improvement-bottom-left-t2" key={course.subjectCode}>
-                      <h6>{course.subjectName}</h6>
-                      <p>{course.subjectCode}</p>
-                      <p>Course Credits: {course.subjectCredits}</p>
-                      <p>L: {course.subjectL} T: {course.subjectT} P: {course.subjectP}</p>
-                      <p onClick={() => handleRemoveCourse(course.subjectCode)} className='remove-x'>X</p>
-                    </div>
-                  ))}
-                </div>
-                <form>
-                  <p>Present CGPA <span style={{ color: 'red' }}>*</span></p>
-                  <input
-                    type="text"
-                    placeholder='Ex: 8.00'
-                    required
-                    value={cgpa}
-                    onChange={handleCgpaChange}
-                  />
-                  {showUpload && (
-                    <>
-                      <p>Upload IEE Signed Document (Mandatory for 8th sem students)</p>
-                      <input type="file" onChange={handleIEEFileChange} />
-                    </>
-                  )}
-                </form>
-              </div>
-
-              {/* ── RIGHT: search ── */}
               <div className="student-main-course-improvement-bottom-right">
-                <h5>Search Courses for Improvement</h5>
+                <div>
+                  <p className="ci-card-title">Search Courses for Improvement</p>
+                </div>
                 <form onSubmit={handleSubmit1}>
-
-                  <label style={{ color: 'whitesmoke' }}>
-                    Search by Course Name or Code
-                  </label>
-
-                  {/* Single unified smart search — replaces both old inputs */}
+                  <label>Search by Course Name or Code</label>
                   <CourseSearchDropdown
                     courseData={courseData}
                     onSelect={setSelectedCourse}
                     placeholder="Ex: Operating Systems or UCS401"
                   />
-
-                  {/* Preview of the selected course */}
                   {selectedCourse && (
                     <div style={{
                       marginTop: '10px',
                       padding: '10px 14px',
-                      background: '#1e2a38',
-                      borderRadius: '6px',
-                      border: '1px solid #3a4a5c',
-                      color: '#cdd6e0',
+                      background: '#fdf3f2',
+                      borderRadius: '8px',
+                      border: '1px solid #f5c6c2',
                       fontSize: '13px',
                     }}>
-                      <strong style={{ color: '#fff' }}>
-                        {selectedCourse.data["course name"]}
-                      </strong>
-                      <span style={{ color: '#7a9bb5', marginLeft: '8px' }}>
-                        {selectedCourse.subjectCode}
-                      </span>
-                      <div style={{ marginTop: '4px', color: '#7a9bb5' }}>
+                      <strong style={{ color: '#1a1a1a' }}>{selectedCourse.data["course name"]}</strong>
+                      <span style={{ color: '#9a9a9a', marginLeft: '8px' }}>{selectedCourse.subjectCode}</span>
+                      <div style={{ marginTop: '4px', color: '#9a9a9a', fontSize: '12px' }}>
                         Credits: {selectedCourse.data["Credit"]} &nbsp;·&nbsp;
-                        L:{selectedCourse.data["L"]} &nbsp;
-                        T:{selectedCourse.data["T"]} &nbsp;
-                        P:{selectedCourse.data["P"]}
+                        L:{selectedCourse.data["L"]} T:{selectedCourse.data["T"]} P:{selectedCourse.data["P"]}
                       </div>
                     </div>
                   )}
-
-                  <button type="submit" style={{ marginTop: '14px' }}>
-                    Add Course
-                  </button>
+                  <button type="submit">➕ Add Course</button>
                 </form>
+              </div>
+
+              <div className="student-main-course-improvement-bottom-left">
+                <div className="ci-card-header">
+                  <p className="ci-card-title">Selected Courses for Improvement</p>
+                  {selectedCourseData.length > 0 && (
+                    <span className="ci-selected-count">{selectedCourseData.length} Selected</span>
+                  )}
+                </div>
+
+                <div className="student-main-course-improvement-bottom-left-t1">
+                  {selectedCourseData.length === 0 && (
+                    <p style={{ color: '#9a9a9a', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>
+                      No courses selected yet
+                    </p>
+                  )}
+                  {selectedCourseData.map((course) => (
+                    <div className="student-main-course-improvement-bottom-left-t2" key={course.subjectCode}>
+                      <div className="ci-course-card-icon">📚</div>
+                      <div className="ci-course-card-info">
+                        <h6>{course.subjectName}</h6>
+                        <p>{course.subjectCode} · Semester</p>
+                      </div>
+                      <p onClick={() => handleRemoveCourse(course.subjectCode)} className='remove-x'>✕</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="ci-cgpa-row">
+                  <label>Present CGPA <span style={{ color: '#c0392b' }}>*</span></label>
+                  <input type="text" placeholder='Ex: 8.00' required value={cgpa} onChange={handleCgpaChange} />
+                </div>
+
+                {showUpload && (
+                  <div className="ci-cgpa-row">
+                    <label>Upload IEE Signed Document <span style={{ color: '#9a9a9a', fontWeight: 400 }}>(Mandatory for 8th sem)</span></label>
+                    <input type="file" onChange={handleIEEFileChange} />
+                  </div>
+                )}
               </div>
             </div>
 
             <button className='generate-options-btn' onClick={handleSubmit2}>
-              Generate Options
+              ⚡ Generate Options
             </button>
 
             <div className="student-course-improvement-choices-div">
-              {choices.length > 0 && <h1>Plz Choose from one of these options:</h1>}
+              {choices.length > 0 && <h1>Choose from one of these options:</h1>}
               {emptyChoices && <h1>No Options Found</h1>}
               {choices.map((val, index) => {
                 const combinedList = [...student.timeTableData, ...newTimeTable[index]];
                 return (
                   <div className='student-course-improvement-individual-choices-div' key={index}>
                     <h2>Option {index + 1}</h2>
-
                     {Object.entries(val).map(([subjectCode, sgs]) => (
                       <div key={subjectCode}>
                         <h4>{subjectCode}</h4>
-                        <p style={{ color: 'whitesmoke' }}>Lecture group: {sgs.lecture_sg || '—'}</p>
-                        <p style={{ color: 'whitesmoke' }}>Lab group: {sgs.lab_sg || '—'}</p>
-                        <p style={{ color: 'whitesmoke' }}>Tutorial group: {sgs.tutorial_sg || '—'}</p>
+                        <p style={{ color: '#6b6b6b' }}>Lecture group: {sgs.lecture_sg || '—'}</p>
+                        <p style={{ color: '#6b6b6b' }}>Lab group: {sgs.lab_sg || '—'}</p>
+                        <p style={{ color: '#6b6b6b' }}>Tutorial group: {sgs.tutorial_sg || '—'}</p>
                       </div>
                     ))}
-
                     {newTimeTable[index].some(event => event.clash)
-                      ? <h4 style={{ color: 'orange' }}>⚠️ Has 1 lecture clash</h4>
-                      : <h4 style={{ color: '#90EE90' }}>✅ No clashes</h4>
+                      ? <h4 style={{ color: '#e67e22' }}>⚠️ Has 1 lecture clash</h4>
+                      : <h4 style={{ color: '#27ae60' }}>✅ No clashes</h4>
                     }
-
                     <Timetable data={combinedList} ed={student.electiveData} />
-
                     <div className="timetable-legend">
-                      <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{ backgroundColor: 'white' }}></div>
-                        <p>Free Slots</p>
-                      </div>
-                      <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{ backgroundColor: '#FFD700' }}></div>
-                        <p>Lectures</p>
-                      </div>
-                      <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{ backgroundColor: '#90EE90' }}></div>
-                        <p>Labs</p>
-                      </div>
-                      <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{ backgroundColor: '#ADD8E6' }}></div>
-                        <p>Tutorials</p>
-                      </div>
-                      <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{ backgroundColor: 'pink' }}></div>
-                        <p>Electives</p>
-                      </div>
-                      <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{ backgroundColor: 'red' }}></div>
-                        <p>Added Slots</p>
-                      </div>
-                      <div className='timetable-legend-inner'>
-                        <div className='timetable-legend-circle' style={{ backgroundColor: 'orange' }}></div>
-                        <p>Clash Slot</p>
-                      </div>
+                      {[
+                        { color: 'white', label: 'Free Slots', border: '1px solid #ddd' },
+                        { color: '#FFD700', label: 'Lectures' },
+                        { color: '#90EE90', label: 'Labs' },
+                        { color: '#ADD8E6', label: 'Tutorials' },
+                        { color: 'pink', label: 'Electives' },
+                        { color: 'red', label: 'Added Slots' },
+                        { color: 'orange', label: 'Clash Slot' },
+                      ].map(({ color, label, border }) => (
+                        <div className='timetable-legend-inner' key={label}>
+                          <div className='timetable-legend-circle' style={{ backgroundColor: color, border }}></div>
+                          <p>{label}</p>
+                        </div>
+                      ))}
                     </div>
-
-                    <button
-                      className='finalize-btn'
-                      onClick={() => handleSubmit3(val, combinedList)}
-                    >
-                      Finalize option {index + 1}
+                    <button className='finalize-btn' onClick={() => handleSubmit3(val, combinedList)}>
+                      Finalize Option {index + 1}
                     </button>
                   </div>
                 );

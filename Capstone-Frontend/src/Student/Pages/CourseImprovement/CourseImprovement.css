@@ -1,257 +1,499 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lora&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:wght@700&display=swap');
 
-.student-main-course-improvement{
+:root {
+  --bg: #f5f4f0;
+  --card: #ffffff;
+  --border: #e2e0db;
+  --red: #c0392b;
+  --red-hover: #a93226;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b6b6b;
+  --text-muted: #9a9a9a;
+  --accent-light: #fdf3f2;
+  --green: #27ae60;
+  --orange: #e67e22;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+  --radius: 12px;
+}
+
+.student-main-course-improvement {
   margin-left: 250px;
-  padding: 30px;
-  background-color: #1b1a1a;
+  padding: 40px 48px;
+  background-color: var(--bg);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 28px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text-primary);
 }
 
-
-.student-main-course-improvement-top, .student-main-course-improvement-bottom{
+/* ── Header ── */
+.student-main-dashboard-top-row {
   display: flex;
-  width: 100%;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: stretch;
-  justify-content: space-evenly;
-  gap: 50px;
-  /* background-color: azure;
-  padding: 20px;
-  border-radius: 20px; */
-}
-
-.student-main-course-improvement-top-t1{
-  background-color: white;
-  padding: 10px;
-  width: 300px;
-  height: 80px;
-  border-radius: 10px;
-  border: 1px solid gray;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.student-main-course-improvement-top-t1 span{
-  color: red;
-  font-size: 20px;
-}
-
-
-.student-main-course-improvement-top2{
-  border: 1px solid gray;
-  padding: 20px;
-  border-radius: 15px;
-  background-color: #2c3e50;
-  font-family: "Playfair Display", serif;
-  color: #E0D9D9;
-}
-
-.student-main-course-improvement-top2 h3{
-  color: whitesmoke;
-  font-family: "Playfair Display", serif;
-}
-
-
-
-.student-main-course-improvement-bottom-left, .student-main-course-improvement-bottom-right{
-  border: 1px solid gray;
-  border-radius: 10px;
-  padding: 20px;
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  flex: 1;
-  background-color: #2c3e50;
-  color: #DFD0B8;
+  align-items: center;
   justify-content: space-between;
 }
-.student-main-course-improvement-bottom-left h5,
-.student-main-course-improvement-bottom-right h5{
-  padding: 5px 15px;
-  border: 1px solid gray;
-  border-radius: 10px;
-  font-weight: bold;
-  align-self: center;
-}
-.student-main-course-improvement-bottom-left h6{
-  font-weight: bold;
-  font-size: 14px;
-}
 
-.student-main-course-improvement-bottom-left-t1{
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.student-main-course-improvement-bottom-left-t2{
-  border: 2px solid greenyellow;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 5px;
-  font-size: 13px;
-  background-color: #243342;
-}
-
-.student-main-course-improvement-bottom-left-t2 *{
-  padding: 0;
+.student-main-dashboard-top-row h1 {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
   margin: 0;
 }
 
-form input{
-  border: 1px solid gray;
-  outline: none;
-  padding: 5px;
-  border-radius: 5px;
+/* ── Page intro ── */
+.ci-page-intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
 }
-/* Beautify only the new form inputs section */
-.student-main-course-improvement-bottom-right form {
+
+.ci-page-intro-text h2 {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--text-primary);
+}
+
+.ci-page-intro-text p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 420px;
+  line-height: 1.6;
+}
+
+.ci-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #eafaf1;
+  border: 1px solid #a9dfbf;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 0.82rem;
+  color: #1e8449;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ci-status-badge .ci-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #27ae60;
+}
+
+.ci-status-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #27ae60;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+}
+
+/* ── Guidelines ── */
+.student-main-course-improvement-top2 {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  box-shadow: var(--shadow);
+}
+
+.ci-guidelines-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ci-guidelines-steps {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.ci-guideline-step {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.ci-step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--red);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ci-step-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.ci-step-text strong {
+  color: var(--red);
+}
+
+/* ── Two column layout ── */
+.student-main-course-improvement-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── Cards ── */
+.student-main-course-improvement-bottom-left,
+.student-main-course-improvement-bottom-right {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 16px;
 }
 
+.ci-card-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 0 0 4px;
+}
+
+/* ── Search label ── */
 .student-main-course-improvement-bottom-right label {
-  font-weight: bold;
-  color: #e60000;
-  margin-bottom: 5px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  display: block;
 }
 
-.student-main-course-improvement-bottom-right input[type="text"] {
-  padding: 8px 12px;
-  border: 1px solid #aaa;
-  border-radius: 6px;
+/* ── Search input ── */
+.student-main-course-improvement-bottom-right input[type="text"],
+.student-main-course-improvement-bottom-right form input[type="text"] {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  background: #fafafa;
   outline: none;
-  font-size: 14px;
+  box-sizing: border-box;
   transition: border 0.2s, box-shadow 0.2s;
 }
 
 .student-main-course-improvement-bottom-right input[type="text"]:focus {
-  border-color: #4CAF50;
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+  background: white;
 }
 
-.student-main-course-improvement-bottom-right input[type="submit"] {
-  background-color: #4CAF50;
+/* ── Add Course button ── */
+.student-main-course-improvement-bottom-right button[type="submit"],
+.student-main-course-improvement-bottom-right form button {
+  width: 100%;
+  padding: 12px;
+  background: var(--red);
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
 }
 
-.student-main-course-improvement-bottom-right input[type="submit"]:hover {
-  background-color: #45a049;
+.student-main-course-improvement-bottom-right button[type="submit"]:hover,
+.student-main-course-improvement-bottom-right form button:hover {
+  background: var(--red-hover);
+  transform: translateY(-1px);
 }
 
-.student-main-course-improvement-bottom-right p {
-  font-weight: bold;
-  color: #e60000;
-  margin: 10px 0 5px;
+/* ── Selected course cards ── */
+.student-main-course-improvement-bottom-left-t1 {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 80px;
+}
+
+.student-main-course-improvement-bottom-left-t2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: box-shadow 0.2s;
+}
+
+.student-main-course-improvement-bottom-left-t2:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.ci-course-card-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--accent-light);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 14px;
+  flex-shrink: 0;
 }
 
-.student-main-course-improvement-bottom-right {
-  gap: 10px; /* Slightly smaller gap for tighter form layout */
+.ci-course-card-info {
+  flex: 1;
+  margin-left: 12px;
 }
 
-.student-main-course-improvement-bottom-right button{
-  padding: 10px;
+.ci-course-card-info h6 {
+  font-size: 0.88rem;
   font-weight: 600;
-  border-radius: 15px;
-  background-color: antiquewhite;
-  transition: 0.5s;
+  margin: 0 0 2px;
+  color: var(--text-primary);
 }
 
-.student-main-course-improvement-bottom-right button:hover{
-  background-color: rgb(185, 176, 157);
-  color: black;
+.ci-course-card-info p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
 }
 
-.student-main-course-improvement .finalize-btn{
-  padding: 10px;
-  border-radius: 10px;
-  margin: 20px 0;
-}
-
-.student-main-course-improvement .remove-x{
-  color: red;
-  font-size: 17px;
+.remove-x {
+  color: var(--text-muted);
+  font-size: 16px;
   cursor: pointer;
-  font-weight: bold;
-}
-
-
-.generate-options-btn{
-  padding: 10px;
-  border: 1px solid white;
-  background-color: #DFD0B8;
-  color: black;
-  border-radius: 10px;
-  outline: none;
   font-weight: 600;
-  transition: 0.5s;
-  margin-bottom: 30px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  line-height: 1;
 }
 
-.generate-options-btn:hover{
-  color: black;
-  background-color: #c4b7a1;
+.remove-x:hover {
+  color: var(--red);
+  background: var(--accent-light);
+}
+
+/* ── Selected count badge ── */
+.ci-selected-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--red);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.ci-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── CGPA input in left panel ── */
+.ci-cgpa-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.ci-cgpa-row label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.ci-cgpa-row input {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  outline: none;
+  background: #fafafa;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.ci-cgpa-row input:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+  background: white;
+}
+
+/* ── Generate Options button ── */
+.generate-options-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 14px rgba(192, 57, 43, 0.3);
+}
+
+.generate-options-btn:hover {
+  background: var(--red-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(192, 57, 43, 0.4);
+}
+
+/* ── Choices section ── */
+.student-course-improvement-choices-div h1 {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  font-size: 1.4rem;
 }
 
 .student-course-improvement-choices-div h2,
-.student-course-improvement-choices-div h4{
-  color: whitesmoke;
+.student-course-improvement-choices-div h4 {
+  color: var(--text-primary);
 }
 
-.student-course-improvement-individual-choices-div{
-  border: 1px solid gainsboro;
-  padding: 20px;
-  border-radius: 10px;
+.student-course-improvement-individual-choices-div {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 24px;
+  border-radius: var(--radius);
   margin-bottom: 20px;
+  box-shadow: var(--shadow);
 }
 
-.student-course-improvement-choices-div h1{
-  color: #697565;
-  font-weight: bolder;
+.finalize-btn {
+  padding: 12px 24px;
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 16px;
 }
 
-.course-improvement-wait-heading{
+.finalize-btn:hover {
+  background: var(--red-hover);
+  transform: translateY(-1px);
+}
+
+/* ── Wait heading ── */
+.course-improvement-wait-heading {
   margin: auto;
-  font-weight: bold;
-  color: rgb(237, 94, 94);
+  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--red);
   align-self: center;
   text-align: center;
 }
-ul::-webkit-scrollbar {
-  width: 6px;
+
+/* ── Timetable legend ── */
+.timetable-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
 }
 
-ul::-webkit-scrollbar-track {
-  background: #1e2a38;
-  border-radius: 6px;
+.timetable-legend-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
-ul::-webkit-scrollbar-thumb {
-  background: #3a4a5c;
-  border-radius: 6px;
+.timetable-legend-circle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.1);
 }
 
-ul::-webkit-scrollbar-thumb:hover {
-  background: #7a9bb5;
+/* ── Scrollbar ── */
+ul::-webkit-scrollbar { width: 5px; }
+ul::-webkit-scrollbar-track { background: #ffffff; border-radius: 6px; }
+ul::-webkit-scrollbar-thumb { background: #c0392b; border-radius: 6px; }
+ul::-webkit-scrollbar-thumb:hover { background: #a93226; }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .student-main-course-improvement {
+    margin-left: 0;
+    padding: 24px 20px;
+  }
+
+  .student-main-course-improvement-bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .ci-guidelines-steps {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ci-page-intro {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 600px) {
+  .student-main-dashboard-top-row h1 {
+    font-size: 1.3rem;
+  }
+
+  .student-main-course-improvement {
+    padding: 16px;
+    gap: 16px;
+  }
 }
