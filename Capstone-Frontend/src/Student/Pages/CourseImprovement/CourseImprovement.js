@@ -31,7 +31,7 @@ const getFilteredCourses = (courseData, query) => {
     .filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score)
     .map(({ course }) => course)
-    .slice(0, 10); // max 10 results
+    .slice(0, 20); // max 10 results
 };
 
 // ─────────────────────────────────────────────
@@ -169,8 +169,7 @@ const CourseSearchDropdown = ({ courseData, onSelect, placeholder }) => {
                   {highlightMatch(course.data["course name"], query)}
                 </span>
                 <span style={{ fontSize: '12px', color: '#7a9bb5' }}>
-                  {course.subjectCode} &nbsp;·&nbsp; {course.data["Credit"]} credits
-                  &nbsp;·&nbsp; L:{course.data["L"]} T:{course.data["T"]} P:{course.data["P"]}
+                {course.subjectCode}
                 </span>
               </li>
             );

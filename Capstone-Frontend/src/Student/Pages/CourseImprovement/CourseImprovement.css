@@ -238,3 +238,20 @@ form input{
   align-self: center;
   text-align: center;
 }
+ul::-webkit-scrollbar {
+  width: 6px;
+}
+
+ul::-webkit-scrollbar-track {
+  background: #1e2a38;
+  border-radius: 6px;
+}
+
+ul::-webkit-scrollbar-thumb {
+  background: #3a4a5c;
+  border-radius: 6px;
+}
+
+ul::-webkit-scrollbar-thumb:hover {
+  background: #7a9bb5;
+}
