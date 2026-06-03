@@ -1,21 +1,23 @@
 import React, { useState } from "react";
 import "./Sidebar.css";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FaHome,
   FaBook,
   FaUser,
   FaMoneyCheckAlt,
-  FaCalendarAlt,
   FaHistory,
   FaBell,
   FaCog,
   FaBars,
   FaTimes,
+  FaSignOutAlt,
+  FaPlusCircle,
 } from "react-icons/fa";
 
 export default function StudentSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
@@ -28,31 +30,41 @@ export default function StudentSidebar() {
     { name: "FAQs", path: "/student/faq", icon: <FaCog /> },
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem("ICMPTokenStudent");
+    navigate("/login");
+  };
+
+  const closeMenu = () => setIsOpen(false);
+
   return (
     <>
-      {!isOpen && (
-        <button
-          className="mobile-menu-button"
-          onClick={() => setIsOpen(true)}
-          aria-label="Open menu"
-        >
-          <FaBars />
-        </button>
-      )}
+      {/* Hamburger button — always visible on mobile */}
+      <button
+        className="mobile-menu-button"
+        onClick={() => setIsOpen(true)}
+        aria-label="Open menu"
+      >
+        <FaBars />
+      </button>
 
-      {isOpen && (
-        <div
-          className="sidebar-overlay"
-          onClick={() => setIsOpen(false)}
-        ></div>
-      )}
+      {/* Dark overlay behind sidebar */}
+      <div
+        className={`sidebar-overlay ${isOpen ? "visible" : ""}`}
+        onClick={closeMenu}
+      />
 
       <div className={`student-sidebar ${isOpen ? "open" : ""}`}>
-        <button className="sidebar-close-button" onClick={() => setIsOpen(false)}>
+        {/* Close button (mobile only) */}
+        <button
+          className="sidebar-close-button"
+          onClick={closeMenu}
+          aria-label="Close menu"
+        >
           <FaTimes />
         </button>
 
-        {/* TOP PROFILE */}
+        {/* Profile / Logo */}
         <div className="sidebar-profile">
           <img src="/logo.png" alt="logo" className="sidebar-logo-img" />
           <div>
@@ -61,21 +73,37 @@ export default function StudentSidebar() {
           </div>
         </div>
 
-        {/* MENU */}
+        {/* Nav links */}
         <nav className="student-sidebar-menu">
           {menuItems.map((item, index) => (
             <Link
               to={item.path}
               key={index}
-              className={`menu-item ${location.pathname === item.path ? "active" : ""
-                }`}
-              onClick={() => setIsOpen(false)}
+              className={`menu-item ${location.pathname === item.path ? "active" : ""}`}
+              onClick={closeMenu}
             >
               <span className="icon">{item.icon}</span>
               <span>{item.name}</span>
             </Link>
           ))}
         </nav>
+
+        {/* Footer actions */}
+        <div className="sidebar-footer">
+          {/*<Link
+            to="/student/course-improvement"
+            className="new-app-btn"
+            onClick={closeMenu}
+          >
+            <FaPlusCircle />
+            <span>New Application</span>
+          </Link> */}
+
+          <button className="logout-btn" onClick={handleLogout}>
+            <FaSignOutAlt />
+            <span>Log Out</span>
+          </button>
+        </div>
       </div>
     </>
   );
