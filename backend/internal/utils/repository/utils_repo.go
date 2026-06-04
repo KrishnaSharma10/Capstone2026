@@ -9,6 +9,7 @@ import (
 	"github.com/KrishnaSharma10/Capstone2026/backend/internal/student/model"
 	utilsModel "github.com/KrishnaSharma10/Capstone2026/backend/internal/utils/model"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -107,24 +108,17 @@ func PostANotification(notification utilsModel.Notification) (utilsModel.Notific
 
 	notification.CreatedAt = time.Now()
 
-	filter := bson.M{}
-	update := bson.M{"$set": notification}
-	opts := options.Update().SetUpsert(true)
-
-	_, err := collection.UpdateOne(ctx, filter, update, opts)
+	result, err := collection.InsertOne(ctx, notification)
 	if err != nil {
 		return utilsModel.Notification{}, err
 	}
 
-	var updated utilsModel.Notification
-	if err := collection.FindOne(ctx, bson.M{}).Decode(&updated); err != nil {
-		if err == mongo.ErrNoDocuments {
-			return utilsModel.Notification{}, nil
-		}
-		return utilsModel.Notification{}, err
+	objectID, ok := result.InsertedID.(primitive.ObjectID)
+	if ok {
+		notification.ID = objectID
 	}
 
-	return updated, nil
+	return notification, nil
 }
 
 func GetNotification() (utilsModel.Notification, error) {
@@ -134,7 +128,11 @@ func GetNotification() (utilsModel.Notification, error) {
 	defer cancel()
 
 	var notification utilsModel.Notification
-	err := collection.FindOne(ctx, bson.M{}).Decode(&notification)
+	err := collection.FindOne(
+		ctx,
+		bson.M{},
+		options.FindOne().SetSort(bson.D{{Key: "created_at", Value: -1}}),
+	).Decode(&notification)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
