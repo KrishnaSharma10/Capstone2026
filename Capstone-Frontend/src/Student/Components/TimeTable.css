@@ -2,34 +2,39 @@
   display: grid;
   grid-template-columns: 0.8fr repeat(13, 1fr);
   grid-auto-rows: 80px;
-  border: 1px solid #ccc;
+  border: 2px solid #333;
   width: 95%;
-  /* max-width: 900px; */
   margin: 20px auto;
-  box-shadow: 3px 3px 5px rgba(0,0,0, 0.5);
-  border-radius: 5px;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-.timetable p{
+.timetable p {
   margin: 0;
   padding: 0;
 }
 
 .cell {
-  border: 1px solid #ccc;
+  border: 1.5px solid #999;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: 9px;
+  transition: filter 0.15s ease;
 }
 
-.cell p{
+.cell:hover:not(.header) {
+  filter: brightness(0.95);
+}
+
+.cell p {
   text-align: center;
   width: 100%;
 }
 
-.cell .subname{
+.cell .subname {
   font-weight: 600;
 }
 
@@ -37,4 +42,35 @@
   background-color: #f0f0f0;
   font-weight: bold;
   font-size: 13px;
+  border: 1.5px solid #333;
+}
+
+/* Legend */
+
+.timetable-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 22px;
+  margin: 14px auto 0;
+  width: 95%;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.legend-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
 }

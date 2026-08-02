@@ -4,10 +4,17 @@ import './TimeTable.css';
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const hours = ['8:00 AM', '8:50 AM', '9:40 AM', '10:30 AM', '11:20 AM', '12:10 PM', '1:00 PM', '1:50 PM', '2:40 PM', '3:30 PM', '4:20 PM', '5:10 PM', '6:00 PM'];
 
-const Timetable = ({data, ed}) => {
-  console.log(ed);
-  console.log(data);
+const legendItems = [
+  { label: 'Free Slots', color: '#ffffff', border: true },
+  { label: 'Lectures', color: '#FFD700' },
+  { label: 'Labs', color: '#90ee90' },
+  { label: 'Tutorials', color: '#add8e6' },
+  { label: 'Electives', color: '#FFC0CB' },
+  { label: 'Added', color: 'red' },
+  { label: 'Clash', color: 'orange' },
+];
 
+const Timetable = ({ data, ed }) => {
   var events = [{
     "color": "#FFD700",
     "day": "Monday",
@@ -66,10 +73,10 @@ const Timetable = ({data, ed}) => {
     // 2. added slot (red) — show over existing
     // 3. chosen elective (pink)
     // 4. regular existing slot
-    const clashEvent   = eventz.find(e => e.color === "orange");
-    const addedEvent   = eventz.find(e => e.color === "red");
+    const clashEvent    = eventz.find(e => e.color === "orange");
+    const addedEvent    = eventz.find(e => e.color === "red");
     const electiveEvent = eventz.find(e => e.color === "#FFC0CB" && ed && ed.includes(e.subjectCode));
-    const regularEvent = eventz.find(e => e.color !== "#FFC0CB" && e.color !== "red" && e.color !== "orange");
+    const regularEvent  = eventz.find(e => e.color !== "#FFC0CB" && e.color !== "red" && e.color !== "orange");
 
     const event = clashEvent || addedEvent || electiveEvent || regularEvent;
 
@@ -88,26 +95,43 @@ const Timetable = ({data, ed}) => {
   };
 
   return (
-    <div className="timetable">
-      <div className="cell header"></div>
-      {hours.map((hour) => (
-        <div key={hour} className="cell header">{hour}</div>
-      ))}
+    <>
+      <div className="timetable">
+        <div className="cell header"></div>
+        {hours.map((hour) => (
+          <div key={hour} className="cell header">{hour}</div>
+        ))}
 
-      {days.map((day) => (
-        <React.Fragment key={day}>
-          <div className="cell header">{day}</div>
-          {hours.map((hour) => {
-            const eventz = getEvent(day, hour);
-            return (
-              <React.Fragment key={hour}>
-                {renderCell(eventz)}
-              </React.Fragment>
-            );
-          })}
-        </React.Fragment>
-      ))}
-    </div>
+        {days.map((day) => (
+          <React.Fragment key={day}>
+            <div className="cell header">{day}</div>
+            {hours.map((hour) => {
+              const eventz = getEvent(day, hour);
+              return (
+                <React.Fragment key={hour}>
+                  {renderCell(eventz)}
+                </React.Fragment>
+              );
+            })}
+          </React.Fragment>
+        ))}
+      </div>
+
+      <div className="timetable-legend">
+        {legendItems.map((item) => (
+          <div className="legend-item" key={item.label}>
+            <span
+              className="legend-dot"
+              style={{
+                backgroundColor: item.color,
+                border: item.border ? '2px solid #999' : '2px solid rgba(0,0,0,0.15)',
+              }}
+            ></span>
+            <span className="legend-text">{item.label}</span>
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
 
