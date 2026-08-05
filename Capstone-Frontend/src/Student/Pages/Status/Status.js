@@ -128,6 +128,22 @@ const Status = () => {
               <Timetable data={appData?.new_time_table} ed={appData?.elective_data} />
             </div>
 
+{appData?.opted_courses && appData.opted_courses.length > 0 && (
+  <div className="status-courses-box">
+    <p className="status-courses-title">
+      <FaClipboardList /> Opted Course Groups
+    </p>
+    <div className="status-courses-list">
+      {appData.opted_courses.map((val, idx) => (
+        <div key={idx} className="status-course-item">
+          <span className="status-course-code">{val[0]}</span>
+          <span className="status-course-groups">{val[1]}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
             <div className="status-guidelines-box">
               <p className="status-guidelines-title">
                 <FaClipboardList /> Guidelines

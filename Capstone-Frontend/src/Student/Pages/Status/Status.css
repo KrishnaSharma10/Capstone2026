@@ -163,6 +163,59 @@
   margin: 0 0 16px;
 }
 
+.status-courses-box {
+  background-color: #fff;
+  border: 1px solid #eee;
+  border-radius: 16px;
+  padding: 22px 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.status-courses-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  color: #1a1a1a;
+  margin: 0 0 14px;
+}
+
+.status-courses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.status-course-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 14px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.status-course-code {
+  font-weight: 700;
+  color: #c62828;
+  font-size: 13px;
+  min-width: 70px;
+}
+
+.status-course-groups {
+  font-size: 13px;
+  color: #444;
+}
+
+@media screen and (max-width: 768px) {
+  .status-courses-box {
+    padding: 16px 18px;
+  }
+}
+
 /* Guidelines */
 
 .status-guidelines-box {
