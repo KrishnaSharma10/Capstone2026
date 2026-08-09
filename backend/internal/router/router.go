@@ -1,6 +1,8 @@
 package router
 
 import (
+	"strings"
+
 	authHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/auth/handler"
 	coordinatorHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/coordinator/handler"
 	doaaHandler "github.com/KrishnaSharma10/Capstone2026/backend/internal/doaa/handler"
@@ -16,7 +18,11 @@ func SetupRoutes() *fiber.App {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:3000 , https://capstone-react-frontend.onrender.com",
+		AllowOriginsFunc: func(origin string) bool {
+			return origin == "http://localhost:3000" ||
+				origin == "https://capstone-react-frontend.onrender.com" ||
+				strings.HasSuffix(origin, ".vercel.app")
+		},
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowMethods:     "GET, POST, PUT, DELETE, OPTIONS",
 		AllowCredentials: true,
