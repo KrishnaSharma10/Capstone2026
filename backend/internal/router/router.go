@@ -16,7 +16,7 @@ func SetupRoutes() *fiber.App {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:3000 , https://capstone-react-frontend.onrender.com",
+		AllowOrigins:     "http://localhost:3000 , https://capstone-react-frontend.onrender.com,https://icmpportal-i9lbwiklu-krishnasharma10s-projects.vercel.app ",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowMethods:     "GET, POST, PUT, DELETE, OPTIONS",
 		AllowCredentials: true,
