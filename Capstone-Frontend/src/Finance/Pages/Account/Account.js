@@ -17,7 +17,7 @@ export default function FinanceAccount() {
         }
 
         try {
-            const response = await fetch('http://127.0.0.1:5000/api/finance/update-password', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/finance/update-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

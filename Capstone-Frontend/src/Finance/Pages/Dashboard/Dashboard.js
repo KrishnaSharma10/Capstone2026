@@ -28,7 +28,7 @@ const FinanceDashboard = () => {
     const fetchApplications = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://127.0.0.1:5000/api/get-all-applications');
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/get-all-applications`);
             const data = await response.json();
 
             const pending = [], approved = [], rejected = [];

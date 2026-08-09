@@ -174,7 +174,7 @@ const SignUp = () => {
   });
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:5000/api/student/get-subgroup-name-list")
+    axios.get(`${process.env.REACT_APP_API_URL}/api/student/get-subgroup-name-list`)
       .then(res => {
         const list = res.data["subgroupList"] || [];
         setSubgroups(list);
@@ -230,7 +230,7 @@ const SignUp = () => {
 
   try {
     const res = await axios.post(
-      "http://127.0.0.1:5000/api/student/register",
+      `${process.env.REACT_APP_API_URL}/api/student/register`,
       payload
     );
 

@@ -42,7 +42,7 @@ const ForgetPass = () => {
     }
 
     try {
-      const res = await axios.post("http://127.0.0.1:5000/api/forget-password", { email });
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/forget-password`, { email });
       if (res.status === 200) {
         toast.success("Password reset link sent to your email!");
         setSent(true);

@@ -14,7 +14,7 @@ export default function History() {
   useEffect(() => {
     if (student) {
       axios
-        .post('http://127.0.0.1:5000/api/student/get-all-application', student)
+        .post(`${process.env.REACT_APP_API_URL}/api/student/get-all-application`, student)
         .then((res) => {
           setApplicationData(res.data.Applications);
         })

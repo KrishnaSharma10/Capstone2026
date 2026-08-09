@@ -20,7 +20,7 @@ const StudentFees = () => {
     if (student) {
       if (student.ongoing_application) {
         axios
-          .post('http://127.0.0.1:5000/api/get-application-details', {
+          .post(`${process.env.REACT_APP_API_URL}/api/get-application-details`, {
             application_id: student.ongoing_application,
           })
           .then((res) => {
@@ -60,7 +60,7 @@ const StudentFees = () => {
     try {
       const token = localStorage.getItem('ICMPTokenStudent');
       const response = await axios.post(
-        'http://127.0.0.1:5000/api/student/upload-fee',
+        `${process.env.REACT_APP_API_URL}/api/student/upload-fee`,
         formData,
         {
           headers: {

@@ -18,7 +18,7 @@ export default function AcademicInformation() {
 
   const fetchCourses = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/get-course-list');
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/get-course-list`);
       const data = await res.json();
       setCourseList(data || []);
     } catch (err) {
@@ -65,7 +65,7 @@ export default function AcademicInformation() {
         subjectCode: editForm.subjectCode,
         data: editForm.data
       };
-      await axios.post('http://127.0.0.1:5000/api/update-course', payload);
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/update-course`, payload);
       toast.success('Course updated successfully!');
       closeEdit();
       fetchCourses(); // refresh table

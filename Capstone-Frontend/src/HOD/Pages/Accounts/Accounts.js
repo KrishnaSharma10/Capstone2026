@@ -27,7 +27,7 @@ const Accounts = () => {
       hod_name: name,
       hod_email: hod.hod_email
     }
-    axios.post("http://127.0.0.1:5000/api/hod/update-name", data, {
+    axios.post(`${process.env.REACT_APP_API_URL}/api/hod/update-name`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
@@ -52,7 +52,7 @@ const Accounts = () => {
 
     const token = localStorage.getItem("ICMPTokenHOD");
 
-    axios.post("http://127.0.0.1:5000/api/hod/update-password", {
+    axios.post(`${process.env.REACT_APP_API_URL}/api/hod/update-password`, {
       hod_old_password: oldP,
       hod_new_password: newP,
       hod_email: hod.hod_email

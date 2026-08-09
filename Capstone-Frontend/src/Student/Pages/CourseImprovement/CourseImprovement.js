@@ -213,7 +213,7 @@ const CourseImprovement = () => {
   useEffect(() => {
     if (!student) return;
 
-    axios.get("http://127.0.0.1:5000/api/get-course-list")
+    axios.get(`${process.env.REACT_APP_API_URL}/api/get-course-list`)
       .then((res) => setCourseData(res.data))
       .catch(() => toast.error("Failed to fetch courses"));
 
@@ -222,7 +222,7 @@ const CourseImprovement = () => {
       return;
     }
 
-    axios.post("http://127.0.0.1:5000/api/get-application-details", {
+    axios.post(`${process.env.REACT_APP_API_URL}/api/get-application-details`, {
       application_id: student.ongoing_application
     })
       .then((res) => {
@@ -343,7 +343,7 @@ const CourseImprovement = () => {
     setChoices([]);
     setNewTimeTable([]);
 
-    axios.post("http://127.0.0.1:5000/api/student/generate-application", data, {
+    axios.post(`${process.env.REACT_APP_API_URL}/api/student/generate-application`, data, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {

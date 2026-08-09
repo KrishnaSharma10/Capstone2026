@@ -31,7 +31,7 @@ const [newPw, setNewPw] = useState('');
     const handleSaveName = async () => {
         if (nameDraft.trim()) {
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/doaa/update-name', {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/doaa/update-name`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -53,7 +53,7 @@ const [newPw, setNewPw] = useState('');
     const handleSavePassword = async () => {
         if (oldPw && newPw) {
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/doaa/update-password', {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/doaa/update-password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

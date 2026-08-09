@@ -52,7 +52,7 @@ const FeeRequestList = ({ data, requestType, onActionComplete }) => {
     // ── Single approve ────────────────────────────────────────────────────────
     const handleApprove = (row) => {
         const updatedRow = { ...row, stage: 5 };
-        axios.post('http://127.0.0.1:5000/api/finance/update-application', updatedRow)
+        axios.post(`${process.env.REACT_APP_API_URL}/api/finance/update-application`, updatedRow)
             .then(() => {
                 setTableData((prev) => prev.filter((item) => item !== row));
                 setSelectedRowsData((prev) =>
@@ -80,7 +80,7 @@ const FeeRequestList = ({ data, requestType, onActionComplete }) => {
         updatedComments[2] = rejectionReason;
 
         const updatedRow = { ...selectedRow, stage: 10, comments: updatedComments };
-        axios.post('http://127.0.0.1:5000/api/finance/update-application', updatedRow)
+        axios.post(`${process.env.REACT_APP_API_URL}/api/finance/update-application`, updatedRow)
             .then(() => {
                 setTableData((prev) => prev.filter((item) => item !== selectedRow));
                 setSelectedRowsData((prev) =>
@@ -126,7 +126,7 @@ const FeeRequestList = ({ data, requestType, onActionComplete }) => {
 
     const handleApproveAll = () => {
         const formList = selectedRowsData.map((val) => ({ ...val, stage: 5 }));
-        axios.post('http://127.0.0.1:5000/api/finance/update-all-applications', { applications: formList })
+        axios.post(`${process.env.REACT_APP_API_URL}/api/finance/update-all-applications`, { applications: formList })
             .then(() => {
                 setTableData((prev) =>
                     prev.filter((item) =>
@@ -145,7 +145,7 @@ const FeeRequestList = ({ data, requestType, onActionComplete }) => {
 
     const handleRejectAll = () => {
         const formList = selectedRowsData.map((val) => ({ ...val, stage: 10 }));
-        axios.post('http://127.0.0.1:5000/api/finance/update-all-applications', { applications: formList })
+        axios.post(`${process.env.REACT_APP_API_URL}/api/finance/update-all-applications`, { applications: formList })
             .then(() => {
                 setTableData((prev) =>
                     prev.filter((item) =>

@@ -29,7 +29,7 @@ let courseNamesPromise;
 
 const getCourseNames = () => {
   if (!courseNamesPromise) {
-    courseNamesPromise = fetch('http://127.0.0.1:5000/api/get-course-list')
+    courseNamesPromise = fetch(`${process.env.REACT_APP_API_URL}/api/get-course-list`)
       .then((response) => {
         if (!response.ok) throw new Error('Unable to fetch course names');
         return response.json();

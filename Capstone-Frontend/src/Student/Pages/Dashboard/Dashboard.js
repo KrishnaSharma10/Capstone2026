@@ -24,7 +24,7 @@ const Dashboard = () => {
 
     const fetchElectiveData = async () => {
       try {
-        const res = await axios.get("http://127.0.0.1:5000/api/student/get-elective-data");
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/student/get-elective-data`);
         setElectiveData(res.data);
       } catch (err) {
         console.error("Failed to fetch data:", err.response?.data || err.message);
@@ -35,7 +35,7 @@ const Dashboard = () => {
       try {
         const token = localStorage.getItem("ICMPStudentToken");
 
-        const res = await axios.get("http://127.0.0.1:5000/api/student/gettimetable?subgroup=" + student.subgroup, {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/student/gettimetable?subgroup=` + student.subgroup, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

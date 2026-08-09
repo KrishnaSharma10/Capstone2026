@@ -23,7 +23,7 @@ const Status = () => {
   useEffect(() => {
     if (student && student.ongoing_application) {
       setActive(true);
-      axios.post("http://127.0.0.1:5000/api/get-application-details", {
+      axios.post(`${process.env.REACT_APP_API_URL}/api/get-application-details`, {
         application_id: student.ongoing_application
       })
       .then((res) => {

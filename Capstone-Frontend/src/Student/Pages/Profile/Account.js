@@ -132,7 +132,7 @@ export default function Account() {
   React.useEffect(() => {
     let sg = [], el = [];
 
-    axios.get('http://127.0.0.1:5000/api/student/get-subgroup-name-list')
+    axios.get(`${process.env.REACT_APP_API_URL}/api/student/get-subgroup-name-list`)
       .then(res => {
         sg = res.data['subgroupList'];
         setSubgroups(sg);
@@ -140,7 +140,7 @@ export default function Account() {
       })
       .catch(() => toast.error('Failed to load subgroup data, please retry!'));
 
-    axios.get('http://127.0.0.1:5000/api/student/get-elective-basket-list')
+    axios.get(`${process.env.REACT_APP_API_URL}/api/student/get-elective-basket-list`)
       .then(res => {
         el = res.data['electiveBasketList'];
         setElectives(el);
@@ -190,7 +190,7 @@ export default function Account() {
     setStudent(updated);
 
     const token = localStorage.getItem('ICMPTokenStudent');
-    axios.post('http://127.0.0.1:5000/api/student/update-details', updated, {
+    axios.post(`${process.env.REACT_APP_API_URL}/api/student/update-details`, updated, {
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     })
       .then(() => {

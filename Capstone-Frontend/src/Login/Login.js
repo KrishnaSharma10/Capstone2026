@@ -103,19 +103,19 @@ const ICMPLogin = () => {
 
     try {
       if (role === "student") {
-        const res = await axios.post("http://127.0.0.1:5000/api/student/login", { thapar_email: emailVal, password: passwordVal });
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/student/login`, { thapar_email: emailVal, password: passwordVal });
         if (res.status === 202) { notifySuccess(); localStorage.setItem("ICMPTokenStudent", res.data.token); setStudent(res.data.studentData); navigate("/student/dashboard"); }
       } else if (role === "coordinator") {
-        const res = await axios.post("http://127.0.0.1:5000/api/coordinator/login", { email: emailVal, password: passwordVal });
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/coordinator/login`, { email: emailVal, password: passwordVal });
         if (res.status === 202) { notifySuccess(); localStorage.setItem("ICMPTokenCoordinator", res.data.token); setCoordinator(res.data.coordinatorData); navigate("/coordinator/dashboard"); }
       } else if (role === "hod") {
-        const res = await axios.post("http://127.0.0.1:5000/api/hod/login", { hod_email: emailVal, hod_password: passwordVal });
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/hod/login`, { hod_email: emailVal, hod_password: passwordVal });
         if (res.status === 202) { notifySuccess(); localStorage.setItem("ICMPTokenHod", res.data.token); setHOD(res.data.hodData); navigate("/hod/dashboard"); }
       } else if (role === "finance") {
-        const res = await axios.post("http://127.0.0.1:5000/api/finance/login", { finance_email: emailVal, finance_password: passwordVal });
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/finance/login`, { finance_email: emailVal, finance_password: passwordVal });
         if (res.status === 200) { notifySuccess(); localStorage.setItem("ICMPTokenFinance", res.data.token); setFinance(res.data.financeData); navigate("/finance/dashboard"); }
       } else if (role === "doaa") {
-        const res = await axios.post("http://127.0.0.1:5000/api/doaa/login", { doaa_email: emailVal, doaa_password: passwordVal });
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/doaa/login`, { doaa_email: emailVal, doaa_password: passwordVal });
         if (res.status === 202) { notifySuccess(); localStorage.setItem("ICMPTokenDoaa", res.data.token); setDOAA(res.data.doaaData); navigate("/doaa/dashboard"); }
       }
     } catch (error) {

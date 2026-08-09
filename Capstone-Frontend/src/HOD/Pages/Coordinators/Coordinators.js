@@ -22,7 +22,7 @@ const token = localStorage.getItem('ICMPTokenHod');
   useEffect(() => {
     const fetchCoordinators = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5000/api/hod/all-coordinators-details', {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/hod/all-coordinators-details`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -51,7 +51,7 @@ const token = localStorage.getItem('ICMPTokenHod');
     };
 
     try {
-      await axios.post("http://127.0.0.1:5000/api/hod/create-coordinator", {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/hod/create-coordinator`, {
         name: newFaculty.name,
         email: newFaculty.email,
         password: newFaculty.password,
@@ -72,7 +72,7 @@ const token = localStorage.getItem('ICMPTokenHod');
 
   const handleRemoveFaculty = async (index, email) => {
     try {
-      await axios.post("http://127.0.0.1:5000/api/hod/delete-coordinator", {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/hod/delete-coordinator`, {
         email: email
       }, {
         headers: { Authorization: `Bearer ${token}` }

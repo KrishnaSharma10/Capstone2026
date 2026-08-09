@@ -10,7 +10,7 @@ const NotificationBox = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const res = await axios.get('http://127.0.0.1:5000/api/student/get-notifications');
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/student/get-notifications`);
         const sortedNotifications = Array.isArray(res.data)
           ? [...res.data].sort((firstNotification, secondNotification) => {
               const firstCreatedAt = new Date(firstNotification.created_at || 0).getTime();

@@ -32,7 +32,7 @@ func SendVerificationEmail(recipientEmail, token string) error {
 	m.SetHeader("From", m.FormatAddress(from, "Improvement Portal Server"))
 	m.SetHeader("To", recipientEmail)
 	m.SetHeader("Subject", "Please Verify Your Email Address - Improvement Course Management Portal")
-	verificationLink := fmt.Sprintf("http://127.0.0.1:5000/verify?token=%s", token)
+	verificationLink := fmt.Sprintf(`${process.env.REACT_APP_API_URL}/verify?token=%s`, token)
 
 	m.SetBody("text/html", fmt.Sprintf(`
 		<!DOCTYPE html>

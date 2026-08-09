@@ -10,7 +10,7 @@ const Notifications = () => {
   const [notification, setNotification] = useState('');
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:5000/api/get-notification') 
+    axios.get(`${process.env.REACT_APP_API_URL}/api/get-notification`) 
       .then((res) => {
         if (res.data && (res.data.title || res.data.message)) {
           setTitle(res.data.title || '');
@@ -32,7 +32,7 @@ const Notifications = () => {
         message: notification,
       };
 
-      await axios.post('http://127.0.0.1:5000/api/coordinator/post-notification', payload); // your POST endpoint
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/coordinator/post-notification`, payload); // your POST endpoint
       alert('Notification updated successfully!');
     } catch (error) {
       console.error('Error posting notification:', error);
