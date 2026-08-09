@@ -24,10 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Elective basket list not retrieved from database")
 	}
-	err = studentHandler.RetrieveSubgroup()
-	if err != nil {
-		log.Fatal("Subgroup list not retrieved from database")
-	}
+	
 
 	app := router.SetupRoutes()
 

@@ -439,6 +439,7 @@ DAY_MAP = {
     "WED": "Wednesday",
     "THU": "Thursday",
     "FRI": "Friday",
+    "SAT": "Saturday",
 }
 
 SLOT_TIMES = {
@@ -844,7 +845,7 @@ class SlotFinder:
             allow_clash=False,
             max_results=50,
         )
-
+        print(f"Pass 1 (no-clash) pool: {len(pool)}")          
         # Pass 2 — fill with clash-allowed if needed
         if len(pool) < 50:
             pool += find_combinations(
@@ -857,7 +858,7 @@ class SlotFinder:
                 max_results=50,
                 existing_results=len(pool),
             )
-
+        print(f"Pass 2 total pool: {len(pool)}")
         print(f"Pool size before diversity filter: {len(pool)}")
 
         def fp_lecture(result):
@@ -908,6 +909,13 @@ class SlotFinder:
             if fp not in seen_slots:
                 seen_slots.add(fp)
                 truly_distinct.append(result)
+
+        for r in truly_distinct:
+            for e in r:
+                print(f"DEBUG {e['subject']} | lec_sg={e['lecture_sg']} lab_sg={e['lab_sg']} tut_sg={e['tutorial_sg']} "
+                      f"| lec={sorted(e['lecture_slots'])}({len(e['lecture_slots'])}) "
+                      f"lab={sorted(e['lab_slots'])}({len(e['lab_slots'])}) "
+                      f"tut={sorted(e['tutorial_slots'])}({len(e['tutorial_slots'])})")
 
         if course_ltp:
             print("Running LTP slot count validation...")

@@ -7,6 +7,103 @@ import StudentSidebar from '../../Components/Sidebar';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import './Account.css';
 
+/* ─── Searchable Sub Group combobox ─────────────────────────────────── */
+function SubgroupSearchSelect({ value, onChange, options, placeholder }) {
+  const [open, setOpen] = React.useState(false);
+  const [query, setQuery] = React.useState('');
+  const [highlighted, setHighlighted] = React.useState(0);
+  const wrapRef = React.useRef(null);
+  const inputRef = React.useRef(null);
+
+  const filtered = query.trim() === ''
+    ? options
+    : options.filter(function (o) {
+        return o.toLowerCase().includes(query.trim().toLowerCase());
+      });
+
+  React.useEffect(function () {
+    function handleOutside(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setOpen(false);
+        setQuery('');
+      }
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return function () {
+      document.removeEventListener('mousedown', handleOutside);
+    };
+  }, []);
+
+  React.useEffect(function () {
+    setHighlighted(0);
+  }, [query, open]);
+
+  function commit(opt) {
+    onChange(opt);
+    setOpen(false);
+    setQuery('');
+  }
+
+  function handleKeyDown(e) {
+    if (!open && (e.key === 'ArrowDown' || e.key === 'Enter')) {
+      setOpen(true);
+      return;
+    }
+    if (!open) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlighted(function (h) { return Math.min(h + 1, filtered.length - 1); });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlighted(function (h) { return Math.max(h - 1, 0); });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (filtered[highlighted]) commit(filtered[highlighted]);
+    } else if (e.key === 'Escape') {
+      setOpen(false);
+      setQuery('');
+      if (inputRef.current) inputRef.current.blur();
+    }
+  }
+
+  return (
+    <div className="account-combobox" ref={wrapRef}>
+      <input
+        ref={inputRef}
+        type="text"
+        className="account-field__select account-combobox__input"
+        autoComplete="off"
+        placeholder={placeholder}
+        value={open ? query : (value || '')}
+        onFocus={function () { setOpen(true); setQuery(''); }}
+        onChange={function (e) { setQuery(e.target.value); setOpen(true); }}
+        onKeyDown={handleKeyDown}
+      />
+      {open && (
+        <div className="account-combobox__menu">
+          {filtered.length === 0 ? (
+            <div className="account-combobox__empty">No matches</div>
+          ) : (
+            filtered.map(function (opt, i) {
+              return (
+                <div
+                  key={opt}
+                  className={'account-combobox__option' + (opt === value ? ' selected' : '') + (i === highlighted ? ' highlighted' : '')}
+                  onMouseDown={function (e) { e.preventDefault(); commit(opt); }}
+                  onMouseEnter={function () { setHighlighted(i); }}
+                >
+                  {opt}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Field definitions ─────────────────────────────────────────────── */
 function buildFields(student, subgroups, electives) {
   if (!student) return [];
@@ -15,7 +112,7 @@ function buildFields(student, subgroups, electives) {
     { label: 'Roll Number',     value: student.roll_no,                     section: 'identity' },
     { label: 'Academic Year',   value: student.academic_year,               section: 'identity', type: 'select', options: ['1', '2', '3', '4'] },
     { label: 'Branch',          value: student.branch,                      section: 'course', type: 'select', options: ['COE', 'MECH', 'CIVIL', 'ECE', 'EEE'] },
-    { label: 'Sub Group',         value: student.subgroup,                    section: 'course', type: 'select', options: subgroups },
+    { label: 'Sub Group',         value: student.subgroup,                    section: 'course', type: 'subgroup-search', options: subgroups },
     { label: 'Elective Basket 1', value: student.elective_basket,             section: 'course', type: 'select', options: electives },
     { label: 'Elective Basket 2', value: student.general_elective ?? 'None',  section: 'course', type: 'select', options: ['None', 'Cyber Security', 'EDS', 'French', 'Graph Theory'] },
     // { label: 'Phone Number',      value: student.phone_number,                section: 'identity' },
@@ -57,6 +154,18 @@ export default function Account() {
     setFields(prev => {
       const next = [...prev];
       next[index] = { ...next[index], value };
+
+      // If Academic Year changed, make sure Sub Group still matches the new year
+      if (next[index].label === 'Academic Year') {
+        const sgIndex = next.findIndex(f => f.label === 'Sub Group');
+        if (sgIndex !== -1) {
+          const yearFiltered = subgroups.filter(sg => sg.charAt(0) === String(value));
+          if (!yearFiltered.includes(next[sgIndex].value)) {
+            next[sgIndex] = { ...next[sgIndex], value: yearFiltered[0] || '' };
+          }
+        }
+      }
+
       return next;
     });
   };
@@ -94,11 +203,31 @@ export default function Account() {
       });
   };
 
+  const academicYearValue = fields.find(f => f.label === 'Academic Year')?.value;
+
   /* Render a single form field */
   const renderField = (field, globalIndex) => (
     <div key={globalIndex}>
       <label className="account-field__label">{field.label}</label>
-      {field.type === 'select' ? (
+      {field.type === 'subgroup-search' ? (
+        (() => {
+          const yearFiltered = (field.options || []).filter(
+            sg => sg.charAt(0) === String(academicYearValue)
+          );
+          return yearFiltered.length === 0 ? (
+            <div className="account-combobox__empty-static">
+              No sub groups found for Year {academicYearValue}
+            </div>
+          ) : (
+            <SubgroupSearchSelect
+              value={field.value}
+              onChange={v => handleChange(globalIndex, v)}
+              options={yearFiltered}
+              placeholder={`Search Year ${academicYearValue} sub groups...`}
+            />
+          );
+        })()
+      ) : field.type === 'select' ? (
         <select
           className="account-field__select"
           value={field.value ?? ''}

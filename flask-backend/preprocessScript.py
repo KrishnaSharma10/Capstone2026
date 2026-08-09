@@ -498,7 +498,7 @@ _COURSE_RE = re.compile(r'^(?=.{5,})[A-Z]{2,}[A-Z0-9]*\d+', re.IGNORECASE)
 
 DAY_MAP = {
     'MON': 'Monday', 'TUE': 'Tuesday', 'WED': 'Wednesday',
-    'THU': 'Thursday', 'FRI': 'Friday',
+    'THU': 'Thursday', 'FRI': 'Friday', 'SAT': 'Saturday',
 }
 
 SLOT_TIMES = {

@@ -1,9 +1,10 @@
 .timetable {
   display: grid;
   grid-template-columns: 0.8fr repeat(13, 1fr);
-  grid-auto-rows: 80px;
+  grid-auto-rows: minmax(38px, 6.2vh);   /* was: grid-auto-rows: 80px; */
   border: 2px solid #333;
   width: 95%;
+  max-height: 78vh;                       /* NEW: caps total table height */
   margin: 20px auto;
   box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.35);
   border-radius: 6px;
@@ -36,7 +37,28 @@
 }
 
 .cell .subname {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.15;
+  overflow: hidden;
   font-weight: 600;
+}
+
+.cell .subcode {
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.cell .type-tag {
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.cell .clash-tag {
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
 }
 
 .header {

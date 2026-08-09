@@ -29,6 +29,29 @@ const getFilteredCourses = (courseData, query) => {
     .map(({ course }) => course)
     .slice(0, 20);
 };
+const getClashDetails = (existingTimeTable, newEvents) => {
+  const pairs = [];
+  newEvents.forEach((newEvent) => {
+    if (!newEvent.clash) return;
+    const existing = existingTimeTable.find(
+      (e) => e.day === newEvent.day && e.hour === newEvent.hour && e.subjectCode !== newEvent.subjectCode
+    );
+    pairs.push({
+      day: newEvent.day,
+      hour: newEvent.hour,
+      newCode: newEvent.subjectCode,
+      existingCode: existing ? existing.subjectCode : null,
+    });
+  });
+
+  // De-duplicate by course-code pair (a multi-hour lecture clash shouldn't repeat)
+  const seen = new Map();
+  pairs.forEach((p) => {
+    const key = `${p.newCode}__${p.existingCode}`;
+    if (!seen.has(key)) seen.set(key, p);
+  });
+  return Array.from(seen.values());
+};
 
 const CourseSearchDropdown = ({ courseData, onSelect, placeholder }) => {
   const [query, setQuery] = useState('');
@@ -338,6 +361,11 @@ const CourseImprovement = () => {
     setSelectedCourseData(prev => prev.filter(c => c.subjectCode !== subjectCode));
   };
 
+  const getCourseName = (code) => {
+    const found = courseData.find((c) => c.subjectCode === code);
+    return found ? found.data["course name"] : code;
+  };
+
   const currentMonth = new Date().getMonth();
   const showUpload = currentMonth >= 0 && currentMonth <= 4;
 
@@ -482,27 +510,27 @@ const CourseImprovement = () => {
                         <p style={{ color: '#6b6b6b' }}>Tutorial group: {sgs.tutorial_sg || '—'}</p>
                       </div>
                     ))}
-                    {newTimeTable[index].some(event => event.clash)
-                      ? <h4 style={{ color: '#e67e22' }}>⚠️ Has 1 lecture clash</h4>
-                      : <h4 style={{ color: '#27ae60' }}>✅ No clashes</h4>
-                    }
-                    <Timetable data={combinedList} ed={student.electiveData} />
-                    <div className="timetable-legend">
-                      {[
-                        { color: 'white', label: 'Free Slots', border: '1px solid #ddd' },
-                        { color: '#FFD700', label: 'Lectures' },
-                        { color: '#90EE90', label: 'Labs' },
-                        { color: '#ADD8E6', label: 'Tutorials' },
-                        { color: 'pink', label: 'Electives' },
-                        { color: 'red', label: 'Added Slots' },
-                        { color: 'orange', label: 'Clash Slot' },
-                      ].map(({ color, label, border }) => (
-                        <div className='timetable-legend-inner' key={label}>
-                          <div className='timetable-legend-circle' style={{ backgroundColor: color, border }}></div>
-                          <p>{label}</p>
+                    {(() => {
+                      const clashPairs = getClashDetails(student.timeTableData, newTimeTable[index]);
+                      if (clashPairs.length === 0) {
+                        return <h4 style={{ color: '#27ae60' }}>✅ No clashes</h4>;
+                      }
+                      return (
+                        <div style={{ margin: '8px 0' }}>
+                          <h4 style={{ color: '#e67e22', marginBottom: '4px' }}>
+                            ⚠️ Has {clashPairs.length} clash{clashPairs.length > 1 ? 'es' : ''}
+                          </h4>
+                          {clashPairs.map((p, i) => (
+                            <p key={i} style={{ fontSize: '14px', color: '#e67e22', fontWeight: 700, margin: '2px 0' }}>
+                              {getCourseName(p.newCode)} ({p.newCode}) clashes with{' '}
+                              {p.existingCode ? `${getCourseName(p.existingCode)} (${p.existingCode})` : 'an existing class'}
+                              {' '}on {p.day} at {p.hour}
+                            </p>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })()}
+                    <Timetable data={combinedList} ed={student.electiveData} />
                     <button className='finalize-btn' onClick={() => handleSubmit3(val, combinedList)}>
                       Finalize Option {index + 1}
                     </button>

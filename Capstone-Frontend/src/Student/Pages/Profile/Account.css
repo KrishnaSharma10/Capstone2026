@@ -212,3 +212,59 @@
     gap: 14px;
   }
 }
+
+.account-combobox {
+  position: relative;
+}
+
+.account-combobox__input {
+  cursor: text;
+}
+
+.account-combobox__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: white;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  z-index: 50;
+}
+
+.account-combobox__option {
+  padding: 9px 13px;
+  font-size: 13.5px;
+  color: #111;
+  cursor: pointer;
+}
+
+.account-combobox__option.highlighted {
+  background: #fdecec;
+}
+
+.account-combobox__option.selected {
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.account-combobox__option:hover {
+  background: #fdecec;
+}
+
+.account-combobox__empty {
+  padding: 10px 13px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.account-combobox__empty-static {
+  padding: 11px 13px;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #9ca3af;
+}

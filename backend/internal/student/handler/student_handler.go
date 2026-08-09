@@ -6,7 +6,7 @@ import (
 )
 
 var electiveBasketList []string
-var subgroupList []string
+
 
 func RegisterStudent(c *fiber.Ctx) error {
 	return service.CreateStudent(c)
@@ -26,17 +26,16 @@ func RetrieveElectiveBasket() error {
 	return err
 }
 
-func RetrieveSubgroup() error {
-	var err error
-	subgroupList, err = service.RetrieveSubgroup()
-	return err
-}
 
 func GetElectiveBasket(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"electiveBasketList": electiveBasketList})
 }
 
 func GetSubgroup(c *fiber.Ctx) error {
+	subgroupList, err := service.RetrieveSubgroup()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch subgroups"})
+	}
 	return c.JSON(fiber.Map{"subgroupList": subgroupList})
 }
 

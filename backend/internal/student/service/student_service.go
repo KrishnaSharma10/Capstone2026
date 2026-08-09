@@ -115,11 +115,7 @@ func RetrieveElectiveBasket() ([]string, error) {
 }
 
 func RetrieveSubgroup() ([]string, error) {
-	subgroupList, err := repository.SubgroupFromDB()
-	if err != nil {
-		return nil, err
-	}
-	return subgroupList.Data, nil
+	return repository.SubgroupFromDB()
 }
 
 // NEED TO CHECK JWT, APPLICATION ID AND RANDOMIZE THE FILE NAME ***************

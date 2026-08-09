@@ -88,7 +88,7 @@
   padding: 20px;
   border-radius: 12px;
 
-  max-height: 500px;
+  max-height: 800px;
   /* 👈 controls height */
   display: flex;
   flex-direction: column;

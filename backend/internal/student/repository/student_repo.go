@@ -100,20 +100,25 @@ func ElectiveBasketFromDB() (model.ElectiveBasket, error) {
 	return basket, nil
 
 }
-func SubgroupFromDB() (model.Subgroup, error) {
-	subgroupNames := database.MongoDB.Collection("subgroupNames")
+func SubgroupFromDB() ([]string, error) {
+	timeTableCollection := database.MongoDB.Collection("timeTableData2")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var subgroupList model.Subgroup
-	err := subgroupNames.FindOne(ctx, bson.M{}).Decode(&subgroupList)
+	rawValues, err := timeTableCollection.Distinct(ctx, "subgroup", bson.M{})
 	if err != nil {
-		return model.Subgroup{}, err
+		return nil, err
 	}
 
-	return subgroupList, nil
+	subgroups := make([]string, 0, len(rawValues))
+	for _, v := range rawValues {
+		if s, ok := v.(string); ok && s != "" {
+			subgroups = append(subgroups, s)
+		}
+	}
 
+	return subgroups, nil
 }
 
 func UpdateDetailsDB(student *model.Student) error {

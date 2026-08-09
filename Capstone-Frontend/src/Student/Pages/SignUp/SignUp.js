@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./SignUp.css";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -26,7 +26,7 @@ const CheckIcon = () => (
 );
 
 /* ── Static data ── */
-const BRANCHES        = ["COE", "MECH", "CIVIL", "ECE", "EEE", "BT", "CHE"];
+const BRANCHES        = ["COE","COPC", "COBS","AI & ML","MECH", "CIVIL", "ECE", "EEE", "BT", "CHE"];
 const DEPARTMENTS     = ["CSED", "ECED", "MED", "CED", "BED", "CHED", "MATH"];
 const ELECTIVE_BASKETS = [
   "None", "Financial Derivative", "Data Science", "High Performance Computing",
@@ -46,6 +46,110 @@ const Field = ({ label, children }) => (
     {children}
   </div>
 );
+const ChevronIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
+const SearchableSelect = ({ value, onChange, options, placeholder }) => {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [highlighted, setHighlighted] = useState(0);
+  const wrapRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const filtered = query.trim() === ""
+    ? options
+    : options.filter(function (o) {
+        return o.toLowerCase().includes(query.trim().toLowerCase());
+      });
+
+  useEffect(function () {
+    function handleOutside(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setOpen(false);
+        setQuery("");
+      }
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return function () {
+      document.removeEventListener("mousedown", handleOutside);
+    };
+  }, []);
+
+  useEffect(function () {
+    setHighlighted(0);
+  }, [query, open]);
+
+  function commit(opt) {
+    onChange(opt);
+    setOpen(false);
+    setQuery("");
+  }
+
+  function handleKeyDown(e) {
+    if (!open && (e.key === "ArrowDown" || e.key === "Enter")) {
+      setOpen(true);
+      return;
+    }
+    if (!open) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlighted(function (h) { return Math.min(h + 1, filtered.length - 1); });
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlighted(function (h) { return Math.max(h - 1, 0); });
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (filtered[highlighted]) commit(filtered[highlighted]);
+    } else if (e.key === "Escape") {
+      setOpen(false);
+      setQuery("");
+      if (inputRef.current) inputRef.current.blur();
+    }
+  }
+
+  return (
+    <div className="icmp_combobox" ref={wrapRef}>
+      <div className="icmp_combobox_input_wrap">
+        <input
+          ref={inputRef}
+          type="text"
+          autoComplete="off"
+          placeholder={placeholder}
+          value={open ? query : (value || "")}
+          onFocus={function () { setOpen(true); setQuery(""); }}
+          onChange={function (e) { setQuery(e.target.value); setOpen(true); }}
+          onKeyDown={handleKeyDown}
+        />
+        <span className="icmp_combobox_chevron"><ChevronIcon /></span>
+      </div>
+
+      {open && (
+        <div className="icmp_combobox_menu">
+          {filtered.length === 0 ? (
+            <div className="icmp_combobox_empty">No matches</div>
+          ) : (
+            filtered.map(function (opt, i) {
+              return (
+                <div
+                  key={opt}
+                  className={"icmp_combobox_option" + (opt === value ? " selected" : "") + (i === highlighted ? " highlighted" : "")}
+                  onMouseDown={function (e) { e.preventDefault(); commit(opt); }}
+                  onMouseEnter={function () { setHighlighted(i); }}
+                >
+                  {opt}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -74,10 +178,23 @@ const SignUp = () => {
       .then(res => {
         const list = res.data["subgroupList"] || [];
         setSubgroups(list);
-        if (list.length > 0) setForm(f => ({ ...f, subgroup: list[0] }));
       })
       .catch(() => toast.error("Failed to load subgroups"));
   }, []);
+  const yearFilteredSubgroups = subgroups.filter(function (sg) {
+    return sg.charAt(0) === String(form.academic_year);
+  });
+
+  useEffect(function () {
+    if (yearFilteredSubgroups.length === 0) {
+      if (form.subgroup !== "") setForm(function (f) { return { ...f, subgroup: "" }; });
+      return;
+    }
+    if (yearFilteredSubgroups.indexOf(form.subgroup) === -1) {
+      setForm(function (f) { return { ...f, subgroup: yearFilteredSubgroups[0] }; });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.academic_year, subgroups]);
 
   const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
 
@@ -86,6 +203,9 @@ const SignUp = () => {
       if (!form.name.trim())                      { toast.error("Name is required");                    return false; }
       if (!form.roll_no.trim())                   { toast.error("Roll number is required");             return false; }
       if (!/^\d{10}$/.test(form.phone_number))    { toast.error("Enter a valid 10-digit phone number"); return false; }
+    }
+    if (step === 2) {
+      if (!form.subgroup) { toast.error("Please select a valid sub group"); return false; }
     }
     if (step === 3) {
       if (!form.thapar_email.endsWith("@thapar.edu")) { toast.error("Email must end with @thapar.edu");            return false; }
@@ -205,9 +325,22 @@ const SignUp = () => {
                 </Field>
               </div>
               <Field label="Sub Group">
-                <select value={form.subgroup} onChange={set("subgroup")}>
-                  {(subgroups.length ? subgroups : ["Loading..."]).map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
+                {subgroups.length === 0 ? (
+                  <select disabled>
+                    <option>Loading...</option>
+                  </select>
+                ) : yearFilteredSubgroups.length === 0 ? (
+                  <div className="icmp_combobox_empty_static">
+                    No sub groups found for Year {form.academic_year}
+                  </div>
+                ) : (
+                  <SearchableSelect
+                    value={form.subgroup}
+                    onChange={function (v) { setForm(function (f) { return { ...f, subgroup: v }; }); }}
+                    options={yearFilteredSubgroups}
+                    placeholder={"Search Year " + form.academic_year + " sub groups..."}
+                  />
+                )}
               </Field>
               <Field label="Elective Basket">
                 <select value={form.elective_basket} onChange={set("elective_basket")}>
