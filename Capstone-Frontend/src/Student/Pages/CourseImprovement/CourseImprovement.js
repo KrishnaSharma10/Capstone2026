@@ -281,7 +281,7 @@ const CourseImprovement = () => {
       studentData: student
     };
 
-    axios.post("http://13.50.249.120", data)
+    axios.post("https://tier-according-comparative-old.trycloudflare.com/health", data)
       .then((res) => {
         setChoices(res.data.choices);
         setNewTimeTable(res.data.newTimeTable);
