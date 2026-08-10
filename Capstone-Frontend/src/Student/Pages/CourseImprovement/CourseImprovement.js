@@ -281,7 +281,7 @@ const CourseImprovement = () => {
       studentData: student
     };
 
-    axios.post("https://comparable-chose-complimentary-justice.trycloudflare.com", data)
+    axios.post("https://candidates-cinema-collection-anime.trycloudflare.com/flask", data)
       .then((res) => {
         setChoices(res.data.choices);
         setNewTimeTable(res.data.newTimeTable);
